@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36ba719a377cb7e4abbbe0414ab26baa, type: 3}
   m_Name: Introduction
   m_EditorClassIdentifier: 
+  characterName: Ryan
   dialogueTreeElements:
-  - 
+  - Hello there. My name is Ryan.
+  - I am here to save you from something.
+  - Something sinister...
   nextDialogueTree: {fileID: 0}
