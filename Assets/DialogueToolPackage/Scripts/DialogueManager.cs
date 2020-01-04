@@ -5,16 +5,21 @@ using UnityEngine.UI;
 
 public class DialogueManager : MonoBehaviour
 {
+    [Header("Dialogue Canvas Elements:")]
+    public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueCanvas
     public Text nameText;
     public Text dialogueText;
 
-    private Animator animator;
+    [Header("Dialogue Settings:")]
+    [Range(0, 0.1f)] public float printLetterDelay = 0.1f;
+    public bool instantPrint = false;
+    public bool useOpenCloseAnimation = false;
+
     private Queue<string> sentences;
 
     // Start is called before the first frame update
     void Start()
     {
-        animator = GetComponent<Animator>();
         sentences = new Queue<string>();
     }
 
@@ -26,7 +31,12 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogue(DialogueTree dialogueTree)
     {
-        //animator.SetBool("isOpen", true);
+        dialogueCanvas.SetActive(true);
+
+        if (useOpenCloseAnimation)
+        {
+            dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+        }
 
         //Debug.Log("Start conversation with " + dialogueTree.characterName);
         nameText.text = dialogueTree.characterName;
@@ -51,9 +61,16 @@ public class DialogueManager : MonoBehaviour
 
         string sentence = sentences.Dequeue();
         //Debug.Log(sentence);
-        //dialogueText.text = sentence;         // Display full sentence instantly
-        StopAllCoroutines();                    // Stop coroutine before starting new one.
-        StartCoroutine(TypeSentence(sentence)); // Display or type one character at a time.
+
+        if (instantPrint)
+        {
+            dialogueText.text = sentence;         // Display full sentence instantly
+        }
+        else
+        {
+            StopAllCoroutines();                    // Stop coroutine before starting new one.
+            StartCoroutine(TypeSentence(sentence)); // Display or type one character at a time.
+        }
     }
 
     private IEnumerator TypeSentence(string sentence)
@@ -62,12 +79,22 @@ public class DialogueManager : MonoBehaviour
         foreach(char letter in sentence.ToCharArray())
         {
             dialogueText.text += letter;
-            yield return null; // Wait a single frame/tick
+
+            yield return new WaitForSeconds(printLetterDelay);
+            //yield return null; // Wait a single frame/tick
         }
     }
+
     private void EndDialogue()
     {
         Debug.Log("End of conversation.");
-        //animator.SetBool("isOpen", false);
+
+        if (useOpenCloseAnimation)
+        {
+            dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+
+        }
+        else
+            dialogueCanvas.SetActive(false);
     }
 }
