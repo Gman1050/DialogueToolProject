@@ -8,6 +8,9 @@ public class DialogueTrigger : MonoBehaviour
     
     public void TriggerDialogue()
     {
-        FindObjectOfType<DialogueManager>().StartDialogue(dialogueTree);
+        if (DialogueManager.instance)
+            DialogueManager.instance.StartDialogue(dialogueTree);
+        else
+            Debug.LogError("DialogueManager instance is not set! Please place DialogueManager in the scene.");
     }
 }

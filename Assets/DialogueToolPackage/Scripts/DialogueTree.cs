@@ -9,6 +9,5 @@ public class DialogueTree : ScriptableObject
 
     [TextArea(10, 15)]
     public List<string> dialogueTreeElements = new List<string>();
-
-    public DialogueTree nextDialogueTree;
+    public List<AudioClip> dialogueTreeAudioClips = new List<AudioClip>();
 }

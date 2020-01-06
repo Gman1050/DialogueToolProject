@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class DialogueManager : MonoBehaviour
 {
+    public static DialogueManager instance;
+
     [Header("Dialogue Canvas Elements:")]
     public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueCanvas
     public Text nameText;
@@ -13,47 +15,70 @@ public class DialogueManager : MonoBehaviour
     [Header("Dialogue Print Settings:")]
     [Range(0, 0.1f)] public float printLetterDelay = 0.1f;
     public bool instantPrint = false;
+    public bool printDialogue = true;
 
     [Header("Dialogue Input Settings:")]
     public bool requireContinueButton = false;
 
     [Header("Dialogue Delay Settings:")]
     [Range(0.25f, 2.0f)] public float sentenceDelay = 1.0f;
-    public bool delaySentences = false;
 
     [Header("Dialogue Animation Settings:")]
     public bool useOpenCloseAnimation = false;
+
+    [Header("Dialogue Audio Settings:")]
+    [Range(0, 1)] public float volume = 1.0f;
+    public bool playWithAudio = true;
+    private AudioSource audioSource;
 
     [Header("Debug Settings:")]
     public bool debugComponent = false;
 
     private Queue<string> sentences;
+    private Queue<AudioClip> sentenceAudioClips;
+
+    void Awake()
+    {
+        instance = this;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         sentences = new Queue<string>();
+        sentenceAudioClips = new Queue<AudioClip>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (!printDialogue)
+            requireContinueButton = false;
     }
 
     public void StartDialogue(DialogueTree dialogueTree)
     {
-        if (useOpenCloseAnimation)
+        if (!printDialogue && !playWithAudio)
         {
-            dialogueCanvas.GetComponent<Animator>().enabled = true;
-            dialogueCanvas.GetComponent<Animator>().SetBool("canTransition", true);
-            dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+            Debug.LogError("Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
+            return;
         }
-        else
+
+        if (printDialogue)
         {
-            //dialogueCanvas.SetActive(true);
-            dialogueCanvas.GetComponent<Animator>().enabled = false;
-            dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+            if (useOpenCloseAnimation)
+            {
+                dialogueCanvas.GetComponent<Animator>().enabled = true;
+                dialogueCanvas.GetComponent<Animator>().SetBool("canTransition", true);
+                dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+            }
+            else
+            {
+                //dialogueCanvas.SetActive(true);
+                dialogueCanvas.GetComponent<Animator>().enabled = false;
+                dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+            }
         }
 
         if (debugComponent)
@@ -68,6 +93,11 @@ public class DialogueManager : MonoBehaviour
             sentences.Enqueue(sentence);
         }
 
+        foreach(AudioClip clip in dialogueTree.dialogueTreeAudioClips)
+        {
+            sentenceAudioClips.Enqueue(clip);
+        }
+
         DisplayNextSentence();
     }
 
@@ -80,16 +110,27 @@ public class DialogueManager : MonoBehaviour
         }
 
         string sentence = sentences.Dequeue();
+        AudioClip clip = sentenceAudioClips.Dequeue();
 
         if (debugComponent)
             Debug.Log(sentence);
 
         StopAllCoroutines();                    // Stop coroutine before starting new one.
-        StartCoroutine(TypeSentence(sentence)); // Display or type one character at a time.
+        StartCoroutine(TypeSentence(sentence, clip)); // Display or type one character at a time.
     }
 
-    private IEnumerator TypeSentence(string sentence)
+    private IEnumerator TypeSentence(string sentence, AudioClip clip)
     {
+        audioSource.Stop();
+
+        if (playWithAudio)
+        {
+            if (clip)
+                audioSource.PlayOneShot(clip, volume);
+            else
+                Debug.LogError("No audioclip for string displayed! Please place audioclip in AudioClip List for respective string element.");
+        }
+
         if (instantPrint)
         {
             int punctutationCount = 0;
@@ -148,14 +189,10 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    private IEnumerator DelayNextSentence()
-    {
-        yield return new WaitForSeconds(sentenceDelay);
-        DisplayNextSentence();
-    }
-
     private void EndDialogue()
     {
+        audioSource.Stop();
+        
         if (debugComponent)
             Debug.Log("End of conversation.");
 
