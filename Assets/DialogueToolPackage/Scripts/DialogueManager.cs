@@ -8,9 +8,14 @@ public class DialogueManager : MonoBehaviour
     public static DialogueManager instance;
 
     [Header("Dialogue Canvas Elements:")]
-    public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueCanvas
+    public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxCanvas
     public Text nameText;
     public Text dialogueText;
+
+    [Header("Dialogue VR Canvas Elements:")]
+    public GameObject dialogueVRCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxVRCanvas
+    public Text nameVRText;
+    public Text dialogueVRText;
 
     [Header("Dialogue Print Settings:")]
     [Range(0, 0.1f)] public float printLetterDelay = 0.1f;
@@ -31,9 +36,13 @@ public class DialogueManager : MonoBehaviour
     public bool playWithAudio = true;
     private AudioSource audioSource;
 
+    [Header("Dialogue Audio Settings:")]
+    public bool playAtStart = false;
+    public DialogueTree dialogueTreeTest;
+
     [Header("Debug Settings:")]
     public bool debugComponent = false;
-
+    
     private Queue<string> sentences;
     private Queue<AudioClip> sentenceAudioClips;
 
@@ -48,6 +57,11 @@ public class DialogueManager : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         sentences = new Queue<string>();
         sentenceAudioClips = new Queue<AudioClip>();
+
+        if (playAtStart)
+        {
+            StartDialogue(dialogueTreeTest);
+        }
     }
 
     // Update is called once per frame
@@ -72,12 +86,19 @@ public class DialogueManager : MonoBehaviour
                 dialogueCanvas.GetComponent<Animator>().enabled = true;
                 dialogueCanvas.GetComponent<Animator>().SetBool("canTransition", true);
                 dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+
+                dialogueVRCanvas.GetComponent<Animator>().enabled = true;
+                dialogueVRCanvas.GetComponent<Animator>().SetBool("canTransition", true);
+                dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", true);
             }
             else
             {
                 //dialogueCanvas.SetActive(true);
                 dialogueCanvas.GetComponent<Animator>().enabled = false;
                 dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+
+                dialogueVRCanvas.GetComponent<Animator>().enabled = false;
+                dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
             }
         }
 
@@ -85,6 +106,7 @@ public class DialogueManager : MonoBehaviour
             Debug.Log("Start conversation with " + dialogueTree.characterName);
 
         nameText.text = dialogueTree.characterName;
+        nameVRText.text = dialogueTree.characterName;
 
         sentences.Clear();
 
@@ -145,6 +167,7 @@ public class DialogueManager : MonoBehaviour
             }
 
             dialogueText.text = sentence;         // Display full sentence instantly
+            dialogueVRText.text = sentence;         // Display full sentence instantly
 
             float fullSentenceDelay = (printLetterDelay * sentence.Length) + (punctutationCount * sentenceDelay) + sentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * sentence delay time) + end of dialogueTreeElement delay time.
 
@@ -160,10 +183,12 @@ public class DialogueManager : MonoBehaviour
         else
         {
             dialogueText.text = "";
+            dialogueVRText.text = "";
 
-            foreach(char letter in sentence.ToCharArray())
+            foreach (char letter in sentence.ToCharArray())
             {
                 dialogueText.text += letter;
+                dialogueVRText.text += letter;
 
                 // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
                 if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
@@ -200,11 +225,14 @@ public class DialogueManager : MonoBehaviour
         {
             dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
 
+            dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
         }
         else
         {
             //dialogueCanvas.SetActive(false);
             dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+
+            dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
         }
     }
 }
