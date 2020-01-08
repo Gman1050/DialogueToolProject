@@ -24,5 +24,17 @@ namespace Tests
             // Use yield to skip a frame.
             yield return null;
         }
+
+        [SetUp]
+        public void Setup()
+        {
+
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+
+        }
     }
 }

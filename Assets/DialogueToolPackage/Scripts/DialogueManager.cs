@@ -73,14 +73,17 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogue(DialogueTree dialogueTree)
     {
+        // 1
         if (!printDialogue && !playWithAudio)
         {
             Debug.LogError("Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
             return;
         }
 
+        // 2
         if (printDialogue)
         {
+            // 2a
             if (useOpenCloseAnimation)
             {
                 dialogueCanvas.GetComponent<Animator>().enabled = true;
@@ -91,6 +94,8 @@ public class DialogueManager : MonoBehaviour
                 dialogueVRCanvas.GetComponent<Animator>().SetBool("canTransition", true);
                 dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", true);
             }
+
+            // 2b
             else
             {
                 //dialogueCanvas.SetActive(true);
@@ -102,24 +107,32 @@ public class DialogueManager : MonoBehaviour
             }
         }
 
+        // 3
         if (debugComponent)
             Debug.Log("Start conversation with " + dialogueTree.characterName);
 
+        // 4
         nameText.text = dialogueTree.characterName;
+
+        // 5
         nameVRText.text = dialogueTree.characterName;
 
+        // 6
         sentences.Clear();
 
-        foreach(string sentence in dialogueTree.dialogueTreeElements)
+        // 7
+        foreach (string sentence in dialogueTree.dialogueTreeElements)
         {
             sentences.Enqueue(sentence);
         }
 
-        foreach(AudioClip clip in dialogueTree.dialogueTreeAudioClips)
+        // 8
+        foreach (AudioClip clip in dialogueTree.dialogueTreeAudioClips)
         {
             sentenceAudioClips.Enqueue(clip);
         }
 
+        // 9
         DisplayNextSentence();
     }
 
