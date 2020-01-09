@@ -36,13 +36,14 @@ public class DialogueManager : MonoBehaviour
     public bool playWithAudio = true;
     private AudioSource audioSource;
 
-    [Header("Dialogue Audio Settings:")]
+    [Header("Dialogue Test Settings:")]
     public bool playAtStart = false;
     public DialogueTree dialogueTreeTest;
 
     [Header("Debug Settings:")]
     public bool debugComponent = false;
-    
+
+    // Dialogue Queues
     private Queue<string> sentences;
     private Queue<AudioClip> sentenceAudioClips;
 
