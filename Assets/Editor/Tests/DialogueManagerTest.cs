@@ -201,6 +201,7 @@ namespace Tests
                 return;
             }
 
+            /*
             // 2
             string sentence = sentences.Peek();
             Assert.AreEqual(sentence, sentences.Peek());
@@ -225,6 +226,7 @@ namespace Tests
                 Debug.Log(sentence);
                 LogAssert.Expect(LogType.Error, sentence);
             }
+            */
 
             // 4
             //StopAllCoroutines();                    // Stop coroutine before starting new one.
@@ -309,22 +311,35 @@ namespace Tests
         private void EndDialogue()
         {
             audioSource.Stop();
+            Assert.IsNotNull(audioSource);
+            //Assert.IsTrue(audioSource.isPlaying);
 
             if (debugComponent)
+            {
+                Assert.IsTrue(debugComponent);
                 Debug.Log("End of conversation.");
+                LogAssert.Expect(LogType.Log, "End of conversation.");
+            }
 
             if (useOpenCloseAnimation)
             {
-                dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+                Assert.IsTrue(useOpenCloseAnimation);
 
+                dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
                 dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+
+                Assert.IsFalse(dialogueCanvas.GetComponent<Animator>().GetBool("isOpen"));
+                Assert.IsTrue(dialogueVRCanvas.GetComponent<Animator>().GetBool("isOpen"));
             }
             else
             {
-                //dialogueCanvas.SetActive(false);
-                dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+                Assert.IsFalse(useOpenCloseAnimation);
 
+                dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
                 dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+
+                Assert.AreNotEqual(dialogueCanvas.GetComponent<RectTransform>().localScale, new Vector3(1, 0, 1));
+                Assert.AreEqual(dialogueVRCanvas.GetComponent<RectTransform>().localScale, new Vector3(1, 0, 1));
             }
         }
 
