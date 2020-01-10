@@ -4,7 +4,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.TestTools;
-//using UnityEngine.Assertions;
+using UnityEditor;
 
 namespace Tests
 {
@@ -12,9 +12,13 @@ namespace Tests
     {
         // Dialogue Canvas Elements
         public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxCanvas
+        public Text nameText;
+        public Text dialogueText;
 
         // Dialogue VR Canvas Elements
         public GameObject dialogueVRCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxCanvas
+        public Text nameVRText;
+        public Text dialogueVRText;
 
         // Dialogue Print Settings
         public float printLetterDelay = 0.1f;
@@ -49,12 +53,26 @@ namespace Tests
         [SetUp]
         public void Setup()
         {
+            GameObject audioSourceObject = new GameObject();    // Might need to make global.
+
+            audioSource = audioSourceObject.AddComponent<AudioSource>();
             dialogueCanvas = new GameObject();
             dialogueVRCanvas = new GameObject();
-            dialogueTreeTest = (DialogueTree)ScriptableObject.CreateInstance("DialogueTree");
-
+            dialogueTreeTest = AssetDatabase.LoadAssetAtPath<DialogueTree>("Assets/DialogueToolPackage/DialogueTreeAssets/Introduction.asset");
             sentences = new Queue<string>();
             sentenceAudioClips = new Queue<AudioClip>();
+
+            Assert.IsNotNull(audioSource);
+            Assert.IsNotNull(dialogueCanvas);
+            Assert.IsNotNull(dialogueVRCanvas);
+            Assert.IsNotNull(dialogueTreeTest);
+            Assert.IsNotNull(sentences);
+            Assert.IsNotNull(sentenceAudioClips);
+
+            // The dialogueTreeTest object can also be set with these methods
+            //dialogueTreeTest = Resources.Load<DialogueTree>("DialogueTreeAssets/Introduction");
+            //dialogueTreeTest = (DialogueTree)ScriptableObject.CreateInstance("DialogueTree");
+            //dialogueTreeTest.dialogueTreeElements.Add()
         }
 
         [Test]
@@ -134,17 +152,17 @@ namespace Tests
             GameObject nameTextObject = new GameObject();
             Assert.IsNotNull(nameTextObject);
 
-            Text nameText = nameTextObject.AddComponent<Text>();
+            nameText = nameTextObject.AddComponent<Text>();
             Assert.IsNotNull(nameText);
             Assert.IsEmpty(nameText.text);
-            Assert.IsEmpty(dialogueTreeTest.characterName);
+            Assert.IsNotEmpty(dialogueTreeTest.characterName);
 
             nameText.text = dialogueTreeTest.characterName;
             Assert.AreEqual(nameText.text, dialogueTreeTest.characterName);
 
             // 5
             GameObject nameVRTextObject = new GameObject();
-            Text nameVRText = nameVRTextObject.AddComponent<Text>();
+            nameVRText = nameVRTextObject.AddComponent<Text>();
             Assert.IsNotNull(nameVRTextObject);
             Assert.IsNotNull(nameVRText);
 
@@ -167,20 +185,19 @@ namespace Tests
             {
                 sentenceAudioClips.Enqueue(clip);
             }
-            Assert.AreEqual(sentences.Count, dialogueTreeTest.dialogueTreeAudioClips.Count);
+            Assert.AreEqual(sentenceAudioClips.Count, dialogueTreeTest.dialogueTreeAudioClips.Count);
 
             // 9
-            //DisplayNextSentence();
+            DisplayNextSentenceTest();
         }
 
-        [Test]
         public void DisplayNextSentenceTest()
         {
             // 1
             if (sentences.Count == 0)
             {
                 Assert.AreEqual(sentences.Count, 0);
-                //EndDialogue();
+                EndDialogue();
                 return;
             }
 
@@ -191,13 +208,15 @@ namespace Tests
             int previousSentenceCount = sentences.Count;
             sentences.Dequeue();
             Assert.AreEqual(sentences.Count, previousSentenceCount - 1);
+            CollectionAssert.DoesNotContain(sentences, sentence);
 
             AudioClip clip = sentenceAudioClips.Peek();
             Assert.AreEqual(clip, sentenceAudioClips.Peek());
 
             int previousSentenceAudioClipsCount = sentenceAudioClips.Count;
             sentenceAudioClips.Dequeue();
-            Assert.AreEqual(sentenceAudioClips.Count, previousSentenceCount - 1);
+            Assert.AreEqual(sentenceAudioClips.Count, previousSentenceAudioClipsCount - 1);
+            CollectionAssert.DoesNotContain(sentenceAudioClips, clip);
 
             // 3
             if (debugComponent)
@@ -214,15 +233,117 @@ namespace Tests
             //StartCoroutine(TypeSentence(sentence, clip)); // Display or type one character at a time.
         }
 
+        private IEnumerator TypeSentence(string sentence, AudioClip clip)
+        {
+            audioSource.Stop();
+
+            if (playWithAudio)
+            {
+                if (clip)
+                    audioSource.PlayOneShot(clip, volume);
+                else
+                    Debug.LogError("No audioclip for string displayed! Please place audioclip in AudioClip List for respective string element.");
+            }
+
+            if (instantPrint)
+            {
+                int punctutationCount = 0;
+
+                foreach (char letter in sentence.ToCharArray())
+                {
+                    // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
+                    if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
+                    {
+                        punctutationCount++;
+                    }
+                }
+
+                dialogueText.text = sentence;         // Display full sentence instantly
+                dialogueVRText.text = sentence;         // Display full sentence instantly
+
+                float fullSentenceDelay = (printLetterDelay * sentence.Length) + (punctutationCount * sentenceDelay) + sentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * sentence delay time) + end of dialogueTreeElement delay time.
+
+                if (debugComponent)
+                    Debug.Log("fullSentenceDelay: " + fullSentenceDelay);
+
+                if (!requireContinueButton)
+                {
+                    yield return new WaitForSeconds(fullSentenceDelay);
+                    DisplayNextSentenceTest();
+                }
+            }
+            else
+            {
+                dialogueText.text = "";
+                dialogueVRText.text = "";
+
+                foreach (char letter in sentence.ToCharArray())
+                {
+                    dialogueText.text += letter;
+                    dialogueVRText.text += letter;
+
+                    // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
+                    if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
+                    {
+                        yield return new WaitForSeconds(sentenceDelay);
+                        //yield return null; // Wait a single frame/tick
+                    }
+                    else
+                        yield return new WaitForSeconds(printLetterDelay);
+                }
+
+                // If moving on with the next dialogue to type requires input, then
+                if (!requireContinueButton)
+                {
+                    // If last character is not any form of punctutation, then delay next sentence
+                    if (!(sentence.EndsWith(",") || sentence.EndsWith(";") || sentence.EndsWith(".") || sentence.EndsWith("?") || sentence.EndsWith("!")))
+                    {
+                        yield return new WaitForSeconds(sentenceDelay);
+                    }
+
+                    DisplayNextSentenceTest();
+                }
+            }
+        }
+
+        private void EndDialogue()
+        {
+            audioSource.Stop();
+
+            if (debugComponent)
+                Debug.Log("End of conversation.");
+
+            if (useOpenCloseAnimation)
+            {
+                dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+
+                dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+            }
+            else
+            {
+                //dialogueCanvas.SetActive(false);
+                dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+
+                dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+            }
+        }
+
         [TearDown]
         public void Teardown()
         {
-            Object.DestroyImmediate(dialogueCanvas);
-            Object.DestroyImmediate(dialogueVRCanvas);
-            Object.DestroyImmediate(dialogueTreeTest);
+            audioSource = null;
+            dialogueCanvas = null;
+            dialogueVRCanvas = null;
+            dialogueTreeTest = null;
+            sentences = null;
+            sentenceAudioClips = null;
 
-            sentences.Clear();
-            sentenceAudioClips.Clear();
+            Assert.IsNull(audioSource);
+            Assert.IsNull(dialogueCanvas);
+            Assert.IsNull(dialogueVRCanvas);
+            Assert.IsNull(dialogueTreeTest);
+            Assert.IsNull(sentences);
+            Assert.IsNull(sentenceAudioClips);
         }
     }
 }

@@ -647,7 +647,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 125956, guid: 73ac470d3d909d645a6c89a4664b6849, type: 3}
       propertyPath: m_Name
-      value: TeleportPoint
+      value: TeleportPoint (0)
       objectReference: {fileID: 0}
     - target: {fileID: 428928, guid: 73ac470d3d909d645a6c89a4664b6849, type: 3}
       propertyPath: m_LocalPosition.x
