@@ -50,6 +50,9 @@ namespace Tests
         private Queue<string> sentences;
         private Queue<AudioClip> sentenceAudioClips;
 
+        private Animator animator, animatorVR;
+        private RectTransform rt, rtVR;
+
         [SetUp]
         public void Setup()
         {
@@ -62,12 +65,22 @@ namespace Tests
             sentences = new Queue<string>();
             sentenceAudioClips = new Queue<AudioClip>();
 
+            animator = dialogueCanvas.AddComponent<Animator>();
+            rt = dialogueCanvas.AddComponent<RectTransform>();
+
+            animatorVR = dialogueVRCanvas.AddComponent<Animator>();
+            rtVR = dialogueVRCanvas.AddComponent<RectTransform>();
+
             Assert.IsNotNull(audioSource);
             Assert.IsNotNull(dialogueCanvas);
             Assert.IsNotNull(dialogueVRCanvas);
             Assert.IsNotNull(dialogueTreeTest);
             Assert.IsNotNull(sentences);
             Assert.IsNotNull(sentenceAudioClips);
+            Assert.IsNotNull(animator);
+            Assert.IsNotNull(rt);
+            Assert.IsNotNull(animatorVR);
+            Assert.IsNotNull(rtVR);
 
             // The dialogueTreeTest object can also be set with these methods
             //dialogueTreeTest = Resources.Load<DialogueTree>("DialogueTreeAssets/Introduction");
@@ -75,23 +88,24 @@ namespace Tests
             //dialogueTreeTest.dialogueTreeElements.Add()
         }
 
-        [Test]
+        [Test, Order(1)]
         public void StartDialogueTest()
         {
             // 1
             if (!printDialogue && !playWithAudio)
             {
+                Assert.IsTrue(!printDialogue && !playWithAudio);
                 Debug.LogError("Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
                 LogAssert.Expect(LogType.Error, "Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
                 return;
             }
 
 
-            Animator animator = dialogueCanvas.AddComponent<Animator>();
-            RectTransform rt = dialogueCanvas.AddComponent<RectTransform>();
+            //Animator animator = dialogueCanvas.AddComponent<Animator>();
+            //RectTransform rt = dialogueCanvas.AddComponent<RectTransform>();
 
-            Animator animatorVR = dialogueVRCanvas.AddComponent<Animator>();
-            RectTransform rtVR = dialogueVRCanvas.AddComponent<RectTransform>();
+            //Animator animatorVR = dialogueVRCanvas.AddComponent<Animator>();
+            //RectTransform rtVR = dialogueVRCanvas.AddComponent<RectTransform>();
 
             // 2
             if (printDialogue)
@@ -130,13 +144,13 @@ namespace Tests
                     rt.localScale = new Vector3(1, 1, 1);
 
                     Assert.IsFalse(animator.enabled);
-                    Assert.AreEqual(rt.localScale, new Vector3(1, 1, 1));
+                    Assert.AreEqual(new Vector3(1, 1, 1), rt.localScale);
 
                     animatorVR.enabled = false;
                     rtVR.localScale = new Vector3(1, 1, 1);
 
                     Assert.IsFalse(animatorVR.enabled);
-                    Assert.AreEqual(rtVR.localScale, new Vector3(1, 1, 1));
+                    Assert.AreEqual(new Vector3(1, 1, 1), rtVR.localScale);
                 }
             }
 
@@ -158,7 +172,7 @@ namespace Tests
             Assert.IsNotEmpty(dialogueTreeTest.characterName);
 
             nameText.text = dialogueTreeTest.characterName;
-            Assert.AreEqual(nameText.text, dialogueTreeTest.characterName);
+            Assert.AreEqual(dialogueTreeTest.characterName, nameText.text);
 
             // 5
             GameObject nameVRTextObject = new GameObject();
@@ -167,52 +181,53 @@ namespace Tests
             Assert.IsNotNull(nameVRText);
 
             nameVRText.text = dialogueTreeTest.characterName;
-            Assert.AreEqual(nameVRText.text, dialogueTreeTest.characterName);
+            Assert.AreEqual(dialogueTreeTest.characterName, nameVRText.text);
 
             // 6
             sentences.Clear();
-            Assert.AreEqual(sentences.Count, 0);
+            Assert.AreEqual(0, sentences.Count);
 
             // 7
             foreach (string sentence in dialogueTreeTest.dialogueTreeElements)
             {
                 sentences.Enqueue(sentence);
             }
-            Assert.AreEqual(sentences.Count, dialogueTreeTest.dialogueTreeElements.Count);
+            Assert.AreEqual(dialogueTreeTest.dialogueTreeElements.Count, sentences.Count);
 
             // 8
             foreach (AudioClip clip in dialogueTreeTest.dialogueTreeAudioClips)
             {
                 sentenceAudioClips.Enqueue(clip);
             }
-            Assert.AreEqual(sentenceAudioClips.Count, dialogueTreeTest.dialogueTreeAudioClips.Count);
+            Assert.AreEqual(dialogueTreeTest.dialogueTreeAudioClips.Count, sentenceAudioClips.Count);
 
             // 9
-            DisplayNextSentenceTest();
+            //DisplayNextSentenceTest();
         }
 
+        [Test, Order(2)]
         public void DisplayNextSentenceTest()
         {
             // 1
             if (sentences.Count == 0)
             {
-                Assert.AreEqual(sentences.Count, 0);
-                EndDialogue();
+                Assert.AreEqual(0, sentences.Count);
+                //EndDialogue();
                 return;
             }
+            Assert.AreNotEqual(0, sentences.Count);
 
-            /*
             // 2
             string sentence = sentences.Peek();
-            Assert.AreEqual(sentence, sentences.Peek());
+            Assert.AreEqual(sentences.Peek(), sentence);
 
             int previousSentenceCount = sentences.Count;
             sentences.Dequeue();
-            Assert.AreEqual(sentences.Count, previousSentenceCount - 1);
+            Assert.AreEqual(previousSentenceCount - 1, sentences.Count);
             CollectionAssert.DoesNotContain(sentences, sentence);
 
             AudioClip clip = sentenceAudioClips.Peek();
-            Assert.AreEqual(clip, sentenceAudioClips.Peek());
+            Assert.AreEqual(sentenceAudioClips.Peek(), clip);
 
             int previousSentenceAudioClipsCount = sentenceAudioClips.Count;
             sentenceAudioClips.Dequeue();
@@ -226,7 +241,6 @@ namespace Tests
                 Debug.Log(sentence);
                 LogAssert.Expect(LogType.Error, sentence);
             }
-            */
 
             // 4
             //StopAllCoroutines();                    // Stop coroutine before starting new one.
@@ -235,6 +249,7 @@ namespace Tests
             //StartCoroutine(TypeSentence(sentence, clip)); // Display or type one character at a time.
         }
 
+        //[Test, Order(3)]
         private IEnumerator TypeSentence(string sentence, AudioClip clip)
         {
             audioSource.Stop();
@@ -308,11 +323,14 @@ namespace Tests
             }
         }
 
-        private void EndDialogue()
+        [Test, Order(3)]
+        public void EndDialogue()
         {
-            audioSource.Stop();
             Assert.IsNotNull(audioSource);
-            //Assert.IsTrue(audioSource.isPlaying);
+
+            audioSource.Stop();
+            
+            Assert.IsFalse(audioSource.isPlaying);
 
             if (debugComponent)
             {
@@ -328,7 +346,7 @@ namespace Tests
                 dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
                 dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
 
-                Assert.IsFalse(dialogueCanvas.GetComponent<Animator>().GetBool("isOpen"));
+                Assert.IsTrue(dialogueCanvas.GetComponent<Animator>().GetBool("isOpen"));
                 Assert.IsTrue(dialogueVRCanvas.GetComponent<Animator>().GetBool("isOpen"));
             }
             else
@@ -338,8 +356,8 @@ namespace Tests
                 dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
                 dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
 
-                Assert.AreNotEqual(dialogueCanvas.GetComponent<RectTransform>().localScale, new Vector3(1, 0, 1));
-                Assert.AreEqual(dialogueVRCanvas.GetComponent<RectTransform>().localScale, new Vector3(1, 0, 1));
+                Assert.AreEqual(new Vector3(1, 0, 1), dialogueCanvas.GetComponent<RectTransform>().localScale);
+                Assert.AreEqual(new Vector3(1, 0, 1), dialogueVRCanvas.GetComponent<RectTransform>().localScale);
             }
         }
 
@@ -352,6 +370,10 @@ namespace Tests
             dialogueTreeTest = null;
             sentences = null;
             sentenceAudioClips = null;
+            animator = null;
+            rt = null;
+            animatorVR = null;
+            rtVR = null;
 
             Assert.IsNull(audioSource);
             Assert.IsNull(dialogueCanvas);
@@ -359,6 +381,10 @@ namespace Tests
             Assert.IsNull(dialogueTreeTest);
             Assert.IsNull(sentences);
             Assert.IsNull(sentenceAudioClips);
+            Assert.IsNull(animator);
+            Assert.IsNull(rt);
+            Assert.IsNull(animatorVR);
+            Assert.IsNull(rtVR);
         }
     }
 }
