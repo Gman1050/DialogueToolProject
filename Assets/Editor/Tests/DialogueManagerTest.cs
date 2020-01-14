@@ -53,6 +53,9 @@ namespace Tests
         private Animator animator, animatorVR;
         private RectTransform rt, rtVR;
 
+        private string sentenceStringToPlay = "";
+        private AudioClip sentenceAudioClipToPlay;
+
         [SetUp]
         public void Setup()
         {
@@ -247,11 +250,22 @@ namespace Tests
 
             // 5
             //StartCoroutine(TypeSentence(sentence, clip)); // Display or type one character at a time.
+            sentenceStringToPlay = sentence;
+            sentenceAudioClipToPlay = clip;
+
+            Assert.AreEqual(sentence, sentenceStringToPlay);
+            Assert.AreEqual(clip, sentenceAudioClipToPlay);
         }
 
-        //[Test, Order(3)]
-        private IEnumerator TypeSentence(string sentence, AudioClip clip)
+        [UnityTest, Order(3)]
+        public IEnumerator TypeSentence()
         {
+            string sentence = sentenceStringToPlay;
+            AudioClip clip = sentenceAudioClipToPlay;
+
+            Assert.AreEqual(sentenceStringToPlay, sentence);
+            Assert.AreEqual(sentenceAudioClipToPlay, clip);
+
             audioSource.Stop();
 
             if (playWithAudio)
@@ -259,7 +273,10 @@ namespace Tests
                 if (clip)
                     audioSource.PlayOneShot(clip, volume);
                 else
+                {
                     Debug.LogError("No audioclip for string displayed! Please place audioclip in AudioClip List for respective string element.");
+                    LogAssert.Expect(LogType.Error, "No audioclip for string displayed! Please place audioclip in AudioClip List for respective string element.");
+                }
             }
 
             if (instantPrint)
@@ -281,12 +298,18 @@ namespace Tests
                 float fullSentenceDelay = (printLetterDelay * sentence.Length) + (punctutationCount * sentenceDelay) + sentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * sentence delay time) + end of dialogueTreeElement delay time.
 
                 if (debugComponent)
+                {
+                    Assert.IsTrue(debugComponent);
                     Debug.Log("fullSentenceDelay: " + fullSentenceDelay);
+                    LogAssert.Expect(LogType.Log, "fullSentenceDelay: " + fullSentenceDelay);
+                }
 
                 if (!requireContinueButton)
                 {
-                    yield return new WaitForSeconds(fullSentenceDelay);
-                    DisplayNextSentenceTest();
+                    Assert.IsFalse(requireContinueButton);
+                    //yield return new WaitForSeconds(fullSentenceDelay);
+                    yield return null;
+                    //DisplayNextSentenceTest();
                 }
             }
             else
@@ -302,11 +325,12 @@ namespace Tests
                     // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
                     {
-                        yield return new WaitForSeconds(sentenceDelay);
-                        //yield return null; // Wait a single frame/tick
+                        //yield return new WaitForSeconds(sentenceDelay);
+                        yield return null; // Wait a single frame/tick
                     }
                     else
-                        yield return new WaitForSeconds(printLetterDelay);
+                        yield return null; // Wait a single frame/tick
+                        //yield return new WaitForSeconds(printLetterDelay);
                 }
 
                 // If moving on with the next dialogue to type requires input, then
@@ -315,7 +339,8 @@ namespace Tests
                     // If last character is not any form of punctutation, then delay next sentence
                     if (!(sentence.EndsWith(",") || sentence.EndsWith(";") || sentence.EndsWith(".") || sentence.EndsWith("?") || sentence.EndsWith("!")))
                     {
-                        yield return new WaitForSeconds(sentenceDelay);
+                        //yield return new WaitForSeconds(sentenceDelay);
+                        yield return null; // Wait a single frame/tick
                     }
 
                     DisplayNextSentenceTest();
@@ -323,7 +348,7 @@ namespace Tests
             }
         }
 
-        [Test, Order(3)]
+        [Test, Order(4)]
         public void EndDialogue()
         {
             Assert.IsNotNull(audioSource);
