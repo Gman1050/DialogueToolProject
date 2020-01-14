@@ -52,6 +52,7 @@ MonoBehaviour:
   dialogueVRCanvas: {fileID: 4179406680316026236}
   nameVRText: {fileID: 8283056374623401895}
   dialogueVRText: {fileID: 922544521593736943}
+  textDisplayWidth: 800
   printLetterDelay: 0.05
   instantPrint: 0
   printDialogue: 1
@@ -321,6 +322,11 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3779257214158539562, guid: ec3a864b638a4c84d9b61268f33b35cc,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 800
+      objectReference: {fileID: 0}
     - target: {fileID: 5132161489290548105, guid: ec3a864b638a4c84d9b61268f33b35cc,
         type: 3}
       propertyPath: m_Enabled
@@ -391,6 +397,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2198653673865033881}
     m_Modifications:
+    - target: {fileID: 991699813811609579, guid: ec3a864b638a4c84d9b61268f33b35cc,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1759145408136988993, guid: ec3a864b638a4c84d9b61268f33b35cc,
         type: 3}
       propertyPath: m_Name
@@ -515,6 +526,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3779257214158539562, guid: ec3a864b638a4c84d9b61268f33b35cc,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 5132161489290548105, guid: ec3a864b638a4c84d9b61268f33b35cc,
         type: 3}

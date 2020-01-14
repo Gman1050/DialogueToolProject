@@ -1080,11 +1080,6 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4771517079559893493, guid: 1f93e2744dac24e48bb2b00769d72f34,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5199641196307157830, guid: 1f93e2744dac24e48bb2b00769d72f34,
         type: 3}
       propertyPath: m_Camera

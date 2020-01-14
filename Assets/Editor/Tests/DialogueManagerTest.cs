@@ -21,8 +21,9 @@ namespace Tests
         public Text dialogueVRText;
 
         // Dialogue Print Settings
+        public float textDisplayWidth = 800.0f;
         public float printLetterDelay = 0.1f;
-        public bool instantPrint = false;
+        public bool instantPrint = true;
         public bool printDialogue = true;
 
         // Dialogue Input Settings
@@ -32,11 +33,11 @@ namespace Tests
         public float sentenceDelay = 1.0f;
 
         // Dialogue Animation Settings
-        public bool useOpenCloseAnimation = false;
+        public bool useOpenCloseAnimation = true;
 
         // Dialogue Audio Settings
         public float volume = 1.0f;
-        public bool playWithAudio = true;
+        public bool playWithAudio = false;
         private AudioSource audioSource;
 
         // Dialogue Test Settings
@@ -73,6 +74,9 @@ namespace Tests
 
             animatorVR = dialogueVRCanvas.AddComponent<Animator>();
             rtVR = dialogueVRCanvas.AddComponent<RectTransform>();
+
+            dialogueText = new GameObject().AddComponent<Text>();
+            dialogueVRText = new GameObject().AddComponent<Text>();
 
             Assert.IsNotNull(audioSource);
             Assert.IsNotNull(dialogueCanvas);
@@ -221,6 +225,11 @@ namespace Tests
             Assert.AreNotEqual(0, sentences.Count);
 
             // 2
+            dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueText.GetComponent<RectTransform>().sizeDelta.y);
+            dialogueVRText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y);
+            Assert.AreEqual(new Vector2(textDisplayWidth, dialogueText.GetComponent<RectTransform>().sizeDelta.y), dialogueText.GetComponent<RectTransform>().sizeDelta);
+            Assert.AreEqual(new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y), dialogueVRText.GetComponent<RectTransform>().sizeDelta);
+
             string sentence = sentences.Peek();
             Assert.AreEqual(sentences.Peek(), sentence);
 
@@ -260,42 +269,56 @@ namespace Tests
         [UnityTest, Order(3)]
         public IEnumerator TypeSentence()
         {
-            string sentence = sentenceStringToPlay;
-            AudioClip clip = sentenceAudioClipToPlay;
+            string sentence = sentenceStringToPlay;     // FIXME: Value not reinitialized in DisplayNextSentenceTest.
+            AudioClip clip = sentenceAudioClipToPlay;   // FIXME: Value not reinitialized in DisplayNextSentenceTest.
 
             Assert.AreEqual(sentenceStringToPlay, sentence);
             Assert.AreEqual(sentenceAudioClipToPlay, clip);
 
             audioSource.Stop();
+            Assert.IsFalse(audioSource.isPlaying);
 
             if (playWithAudio)
             {
+                Assert.IsTrue(playWithAudio);
                 if (clip)
+                {
                     audioSource.PlayOneShot(clip, volume);
+                    Assert.IsTrue(audioSource.isPlaying);
+                }
                 else
                 {
                     Debug.LogError("No audioclip for string displayed! Please place audioclip in AudioClip List for respective string element.");
                     LogAssert.Expect(LogType.Error, "No audioclip for string displayed! Please place audioclip in AudioClip List for respective string element.");
                 }
             }
+            else
+                Assert.IsFalse(playWithAudio);
 
             if (instantPrint)
             {
+                Assert.IsTrue(instantPrint);
+
                 int punctutationCount = 0;
+                Assert.AreEqual(0, punctutationCount);
 
                 foreach (char letter in sentence.ToCharArray())
                 {
                     // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
                     {
+                        Assert.IsTrue(letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!');
                         punctutationCount++;
                     }
                 }
 
                 dialogueText.text = sentence;         // Display full sentence instantly
                 dialogueVRText.text = sentence;         // Display full sentence instantly
+                Assert.AreEqual(sentence, dialogueText.text);
+                Assert.AreEqual(sentence, dialogueVRText.text);
 
                 float fullSentenceDelay = (printLetterDelay * sentence.Length) + (punctutationCount * sentenceDelay) + sentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * sentence delay time) + end of dialogueTreeElement delay time.
+                Assert.AreEqual((printLetterDelay * sentence.Length) + (punctutationCount * sentenceDelay) + sentenceDelay, fullSentenceDelay);
 
                 if (debugComponent)
                 {
@@ -316,34 +339,47 @@ namespace Tests
             {
                 dialogueText.text = "";
                 dialogueVRText.text = "";
+                Assert.AreEqual(sentence, dialogueText.text);
+                Assert.AreEqual(sentence, dialogueVRText.text);
 
                 foreach (char letter in sentence.ToCharArray())
                 {
+                    string previousDialogueTextValue = dialogueText.text;
+                    string previousDialogueVRTextValue = dialogueVRText.text;
+
                     dialogueText.text += letter;
                     dialogueVRText.text += letter;
+                    Assert.AreEqual(dialogueText.text, previousDialogueTextValue + letter);
+                    Assert.AreEqual(dialogueVRText.text, previousDialogueVRTextValue + letter);
 
                     // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
                     {
+                        Assert.IsTrue(letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!');
                         //yield return new WaitForSeconds(sentenceDelay);
                         yield return null; // Wait a single frame/tick
                     }
                     else
+                    {
+                        Assert.IsFalse(letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!');
                         yield return null; // Wait a single frame/tick
                         //yield return new WaitForSeconds(printLetterDelay);
+                    }
                 }
 
                 // If moving on with the next dialogue to type requires input, then
                 if (!requireContinueButton)
                 {
+                    Assert.IsFalse(requireContinueButton);
                     // If last character is not any form of punctutation, then delay next sentence
                     if (!(sentence.EndsWith(",") || sentence.EndsWith(";") || sentence.EndsWith(".") || sentence.EndsWith("?") || sentence.EndsWith("!")))
                     {
+                        Assert.IsTrue(!(sentence.EndsWith(",") || sentence.EndsWith(";") || sentence.EndsWith(".") || sentence.EndsWith("?") || sentence.EndsWith("!")));
                         //yield return new WaitForSeconds(sentenceDelay);
                         yield return null; // Wait a single frame/tick
                     }
 
-                    DisplayNextSentenceTest();
+                    //DisplayNextSentenceTest();
                 }
             }
         }

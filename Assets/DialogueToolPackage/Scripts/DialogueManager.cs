@@ -18,6 +18,7 @@ public class DialogueManager : MonoBehaviour
     public Text dialogueVRText;
 
     [Header("Dialogue Print Settings:")]
+    [Range(650, 1800)] public float textDisplayWidth = 800.0f;
     [Range(0, 0.1f)] public float printLetterDelay = 0.1f;
     public bool instantPrint = false;
     public bool printDialogue = true;
@@ -144,6 +145,9 @@ public class DialogueManager : MonoBehaviour
             EndDialogue();
             return;
         }
+
+        dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueText.GetComponent<RectTransform>().sizeDelta.y);
+        dialogueVRText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y);
 
         string sentence = sentences.Dequeue();
         AudioClip clip = sentenceAudioClips.Dequeue();
