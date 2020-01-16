@@ -45,7 +45,7 @@ namespace Tests
         public DialogueTree dialogueTreeTest;
 
         // Debug Settings
-        public bool debugComponent = false;
+        public bool debugComponent = true;
 
         // Dialogue Queues
         private Queue<string> sentences;
@@ -64,19 +64,27 @@ namespace Tests
 
             audioSource = audioSourceObject.AddComponent<AudioSource>();
             dialogueCanvas = new GameObject();
+            //dialogueCanvas = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/DialogueToolPackage/Prefabs/DialogueBoxCanvas.prefab").transform.GetChild(0).gameObject;
             dialogueVRCanvas = new GameObject();
+            //dialogueVRCanvas = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/DialogueToolPackage/Prefabs/DialogueBoxVRCanvas.prefab").transform.GetChild(0).gameObject;
             dialogueTreeTest = AssetDatabase.LoadAssetAtPath<DialogueTree>("Assets/DialogueToolPackage/DialogueTreeAssets/Introduction.asset");
             sentences = new Queue<string>();
             sentenceAudioClips = new Queue<AudioClip>();
 
             animator = dialogueCanvas.AddComponent<Animator>();
+            //animator = dialogueCanvas.GetComponent<Animator>();
             rt = dialogueCanvas.AddComponent<RectTransform>();
+            //rt = dialogueCanvas.GetComponent<RectTransform>();
 
             animatorVR = dialogueVRCanvas.AddComponent<Animator>();
+            //animatorVR = dialogueVRCanvas.GetComponent<Animator>();
             rtVR = dialogueVRCanvas.AddComponent<RectTransform>();
+            //rtVR = dialogueVRCanvas.GetComponent<RectTransform>();
 
             dialogueText = new GameObject().AddComponent<Text>();
+            //dialogueText = dialogueCanvas.transform.GetChild(1).GetComponent<Text>();
             dialogueVRText = new GameObject().AddComponent<Text>();
+            //dialogueVRText = dialogueVRCanvas.transform.GetChild(1).GetComponent<Text>();
 
             Assert.IsNotNull(audioSource);
             Assert.IsNotNull(dialogueCanvas);
@@ -88,6 +96,12 @@ namespace Tests
             Assert.IsNotNull(rt);
             Assert.IsNotNull(animatorVR);
             Assert.IsNotNull(rtVR);
+
+            animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas.controller");
+            animatorVR.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas.controller");
+
+            Assert.IsNotNull(animator.runtimeAnimatorController);
+            Assert.IsNotNull(animatorVR.runtimeAnimatorController);
 
             // The dialogueTreeTest object can also be set with these methods
             //dialogueTreeTest = Resources.Load<DialogueTree>("DialogueTreeAssets/Introduction");
@@ -106,13 +120,6 @@ namespace Tests
                 LogAssert.Expect(LogType.Error, "Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
                 return;
             }
-
-
-            //Animator animator = dialogueCanvas.AddComponent<Animator>();
-            //RectTransform rt = dialogueCanvas.AddComponent<RectTransform>();
-
-            //Animator animatorVR = dialogueVRCanvas.AddComponent<Animator>();
-            //RectTransform rtVR = dialogueVRCanvas.AddComponent<RectTransform>();
 
             // 2
             if (printDialogue)
@@ -166,7 +173,7 @@ namespace Tests
             {
                 Assert.IsTrue(debugComponent);
                 Debug.Log("Start conversation with " + dialogueTreeTest.characterName);
-                LogAssert.Expect(LogType.Error, "Start conversation with " + dialogueTreeTest.characterName);
+                LogAssert.Expect(LogType.Log, "Start conversation with " + dialogueTreeTest.characterName);
             }
 
             // 4
@@ -174,6 +181,7 @@ namespace Tests
             Assert.IsNotNull(nameTextObject);
 
             nameText = nameTextObject.AddComponent<Text>();
+            //nameText = dialogueCanvas.transform.GetChild(0).GetChild(0).GetComponent<Text>();
             Assert.IsNotNull(nameText);
             Assert.IsEmpty(nameText.text);
             Assert.IsNotEmpty(dialogueTreeTest.characterName);
@@ -184,6 +192,7 @@ namespace Tests
             // 5
             GameObject nameVRTextObject = new GameObject();
             nameVRText = nameVRTextObject.AddComponent<Text>();
+            //nameVRText = dialogueVRCanvas.transform.GetChild(0).GetChild(0).GetComponent<Text>();
             Assert.IsNotNull(nameVRTextObject);
             Assert.IsNotNull(nameVRText);
 
@@ -209,7 +218,7 @@ namespace Tests
             Assert.AreEqual(dialogueTreeTest.dialogueTreeAudioClips.Count, sentenceAudioClips.Count);
 
             // 9
-            //DisplayNextSentenceTest();
+            DisplayNextSentenceTest();
         }
 
         [Test, Order(2)]
@@ -219,7 +228,7 @@ namespace Tests
             if (sentences.Count == 0)
             {
                 Assert.AreEqual(0, sentences.Count);
-                //EndDialogue();
+                EndDialogue();
                 return;
             }
             Assert.AreNotEqual(0, sentences.Count);
@@ -251,7 +260,7 @@ namespace Tests
             {
                 Assert.IsTrue(debugComponent);
                 Debug.Log(sentence);
-                LogAssert.Expect(LogType.Error, sentence);
+                LogAssert.Expect(LogType.Log, sentence);
             }
 
             // 4
@@ -379,7 +388,7 @@ namespace Tests
                         yield return null; // Wait a single frame/tick
                     }
 
-                    //DisplayNextSentenceTest();
+                    DisplayNextSentenceTest();
                 }
             }
         }
@@ -407,8 +416,8 @@ namespace Tests
                 dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
                 dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
 
-                Assert.IsTrue(dialogueCanvas.GetComponent<Animator>().GetBool("isOpen"));
-                Assert.IsTrue(dialogueVRCanvas.GetComponent<Animator>().GetBool("isOpen"));
+                Assert.IsFalse(dialogueCanvas.GetComponent<Animator>().GetBool("isOpen"));
+                Assert.IsFalse(dialogueVRCanvas.GetComponent<Animator>().GetBool("isOpen"));
             }
             else
             {
