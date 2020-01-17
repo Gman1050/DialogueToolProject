@@ -413,21 +413,21 @@ namespace Tests
             {
                 Assert.IsTrue(useOpenCloseAnimation);
 
-                dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
-                dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+                animator.SetBool("isOpen", false);
+                animatorVR.SetBool("isOpen", false);
 
-                Assert.IsFalse(dialogueCanvas.GetComponent<Animator>().GetBool("isOpen"));
-                Assert.IsFalse(dialogueVRCanvas.GetComponent<Animator>().GetBool("isOpen"));
+                Assert.IsFalse(animator.GetBool("isOpen"));
+                Assert.IsFalse(animatorVR.GetBool("isOpen"));
             }
             else
             {
                 Assert.IsFalse(useOpenCloseAnimation);
 
-                dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
-                dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+                rt.localScale = new Vector3(1, 0, 1);
+                rtVR.localScale = new Vector3(1, 0, 1);
 
-                Assert.AreEqual(new Vector3(1, 0, 1), dialogueCanvas.GetComponent<RectTransform>().localScale);
-                Assert.AreEqual(new Vector3(1, 0, 1), dialogueVRCanvas.GetComponent<RectTransform>().localScale);
+                Assert.AreEqual(new Vector3(1, 0, 1), rt.localScale);
+                Assert.AreEqual(new Vector3(1, 0, 1), rtVR.localScale);
             }
         }
 
