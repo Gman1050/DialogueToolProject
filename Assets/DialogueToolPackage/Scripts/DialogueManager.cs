@@ -48,6 +48,8 @@ public class DialogueManager : MonoBehaviour
     private Queue<string> sentences;
     private Queue<AudioClip> sentenceAudioClips;
 
+    private bool isTypeSentenceCoroutineRunning = false;
+
     void Awake()
     {
         instance = this;
@@ -140,6 +142,16 @@ public class DialogueManager : MonoBehaviour
 
     public void DisplayNextSentence()
     {
+
+        // Check to see if current sentence is typing first
+        if (isTypeSentenceCoroutineRunning)
+        {
+            // Instant print the rest of the current sentence
+            //dialogueText.text = sentences.
+
+            return;
+        }
+
         if (sentences.Count == 0)
         {
             EndDialogue();
@@ -161,6 +173,8 @@ public class DialogueManager : MonoBehaviour
 
     private IEnumerator TypeSentence(string sentence, AudioClip clip)
     {
+        isTypeSentenceCoroutineRunning = true;
+
         audioSource.Stop();
 
         if (playWithAudio)
@@ -230,6 +244,8 @@ public class DialogueManager : MonoBehaviour
                 DisplayNextSentence();
             }
         }
+
+        isTypeSentenceCoroutineRunning = false;
     }
 
     private void EndDialogue()
