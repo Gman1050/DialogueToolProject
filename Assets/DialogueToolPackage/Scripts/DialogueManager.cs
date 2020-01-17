@@ -146,8 +146,10 @@ public class DialogueManager : MonoBehaviour
         // Check to see if current sentence is typing first
         if (isTypeSentenceCoroutineRunning)
         {
+            StopAllCoroutines();                    // Stop coroutine that is currently printing.
+
             // Instant print the rest of the current sentence
-            //dialogueText.text = sentences.
+            // Change speed of the text without changing the value for the setting. Create private copy of the value.
 
             return;
         }
@@ -244,6 +246,7 @@ public class DialogueManager : MonoBehaviour
                 DisplayNextSentence();
             }
         }
+
 
         isTypeSentenceCoroutineRunning = false;
     }
