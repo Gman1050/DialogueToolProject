@@ -941,6 +941,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: DialogueManager
       objectReference: {fileID: 0}
+    - target: {fileID: 2198653673865033880, guid: 1f93e2744dac24e48bb2b00769d72f34,
+        type: 3}
+      propertyPath: requireContinueButton
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2198653673865033880, guid: 1f93e2744dac24e48bb2b00769d72f34,
+        type: 3}
+      propertyPath: instantPrint
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2198653673865033881, guid: 1f93e2744dac24e48bb2b00769d72f34,
         type: 3}
       propertyPath: m_LocalPosition.x

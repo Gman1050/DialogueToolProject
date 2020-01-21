@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.TestTools;
 using UnityEditor;
+using DialogueSystem;
 
 namespace Tests
 {
