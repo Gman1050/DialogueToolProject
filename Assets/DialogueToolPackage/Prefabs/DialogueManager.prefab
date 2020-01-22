@@ -54,9 +54,11 @@ MonoBehaviour:
   dialogueVRText: {fileID: 8205670818525083850}
   textDisplayWidth: 800
   printLetterDelay: 0.05
-  instantPrint: 0
+  instantPrintBegin: 0
   printDialogue: 1
-  requireContinueButton: 0
+  requireContinueButton: 1
+  instantPrintFinish: 1
+  speedPrintFinish: 0
   sentenceDelay: 1
   useOpenCloseAnimation: 1
   volume: 1
@@ -167,11 +169,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2198653673865033881}
     m_Modifications:
-    - target: {fileID: 2250970953150694328, guid: 8ffa0c8ad6679804c850dc80b563e76d,
-        type: 3}
-      propertyPath: m_Camera
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 5905309523101193786, guid: 8ffa0c8ad6679804c850dc80b563e76d,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -277,9 +274,9 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6592093080049880047, guid: 8ffa0c8ad6679804c850dc80b563e76d,
+    - target: {fileID: 6618129140685397521, guid: 8ffa0c8ad6679804c850dc80b563e76d,
         type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      propertyPath: m_Text
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6996745838964153777, guid: 8ffa0c8ad6679804c850dc80b563e76d,
@@ -347,11 +344,6 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 2198653673865033880}
-    - target: {fileID: 2762464425729670602, guid: ec3a864b638a4c84d9b61268f33b35cc,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 3233075191068729375, guid: ec3a864b638a4c84d9b61268f33b35cc,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -456,11 +448,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066395614903219613, guid: ec3a864b638a4c84d9b61268f33b35cc,
-        type: 3}
-      propertyPath: m_Camera
-      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ec3a864b638a4c84d9b61268f33b35cc, type: 3}

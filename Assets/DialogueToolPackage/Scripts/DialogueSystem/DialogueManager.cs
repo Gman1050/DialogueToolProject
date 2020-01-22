@@ -5,9 +5,12 @@ using UnityEngine.UI;
 
 namespace DialogueSystem
 {
+    /// <summary>
+    /// A class that manages and modifies the entire dialogue system via settings.
+    /// </summary>
     public class DialogueManager : MonoBehaviour
     {
-        public static DialogueManager instance;
+        public static DialogueManager instance; // Static instance of the monobehavior
 
         [Header("Dialogue Canvas Elements:")]
         public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxCanvas
@@ -23,13 +26,15 @@ namespace DialogueSystem
         [Range(650, 1800)] public float textDisplayWidth = 800.0f;
         [Range(0, 0.1f)] public float printLetterDelay = 0.1f;
         public bool instantPrintBegin = false;
-        public bool instantPrintFinish = true;  // Won't apply if instantPrintBegin is true
-        public bool speedPrintFinish = false;   // Won't apply if instantPrintFinish is true
         public bool printDialogue = true;
         private float currentPrintLetterDelay;
 
         [Header("Dialogue Input Settings:")]
         public bool requireContinueButton = false;
+
+        // Requires requireContinueButton to be true
+        public bool instantPrintFinish = true;  // Won't apply if instantPrintBegin is true
+        public bool speedPrintFinish = false;   // Won't apply if instantPrintFinish is true
 
         [Header("Dialogue Delay Settings:")]
         [Range(0.25f, 2.0f)] public float sentenceDelay = 1.0f;
@@ -62,94 +67,113 @@ namespace DialogueSystem
             instance = this;
         }
 
-        // Start is called before the first frame update
+        /// <summary>
+        /// Start is called before the first frame update
+        /// </summary>
         void Start()
         {
+            // Initialize Queues and AudioSource 
             audioSource = GetComponent<AudioSource>();
             sentences = new Queue<string>();
             sentenceAudioClips = new Queue<AudioClip>();
 
+            // Initialize private fields with these settings
             currentPrintLetterDelay = printLetterDelay;
             currentSentenceDelay = sentenceDelay;
 
+            // Used for testing
             if (playAtStart)
             {
                 StartDialogue(dialogueTreeTest);
             }
         }
 
-        // Update is called once per frame
+        /// <summary>
+        /// Update is called once per frame
+        /// </summary>
         void Update()
         {
+            // Set values to false based on prequisite values
             if (!printDialogue)
                 requireContinueButton = false;
+
+            if (instantPrintFinish)
+                speedPrintFinish = false;
         }
 
+        /// <summary>
+        /// A method to initiate the dialogueTree into a displayable UI.
+        /// </summary>
+        /// <param name="dialogueTree">The scriptable object that will be used to extract string and audioclip data for dialogue.</param>
         public void StartDialogue(DialogueTree dialogueTree)
         {
-            // 1
             if (!printDialogue && !playWithAudio)
             {
                 Debug.LogError("Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
                 return;
             }
 
-            // 2
+            // Choose to print string and play audio or just play audio without a respective string
             if (printDialogue)
             {
-                // 2a
+                // Open Dialogue Box with animation or setting local scale
                 if (useOpenCloseAnimation)
                 {
-                    dialogueCanvas.GetComponent<Animator>().enabled = true;
-                    dialogueCanvas.GetComponent<Animator>().SetBool("canTransition", true);
-                    dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", true);
-
-                    dialogueVRCanvas.GetComponent<Animator>().enabled = true;
-                    dialogueVRCanvas.GetComponent<Animator>().SetBool("canTransition", true);
-                    dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+                    if (dialogueCanvas.activeSelf)
+                    {
+                        dialogueCanvas.GetComponent<Animator>().enabled = true;
+                        dialogueCanvas.GetComponent<Animator>().SetBool("canTransition", true);
+                        dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+                    }
+                    else if (dialogueVRCanvas.activeSelf)
+                    {
+                        dialogueVRCanvas.GetComponent<Animator>().enabled = true;
+                        dialogueVRCanvas.GetComponent<Animator>().SetBool("canTransition", true);
+                        dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+                    }
                 }
-
-                // 2b
                 else
                 {
-                    //dialogueCanvas.SetActive(true);
-                    dialogueCanvas.GetComponent<Animator>().enabled = false;
-                    dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
-
-                    dialogueVRCanvas.GetComponent<Animator>().enabled = false;
-                    dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                    if (dialogueCanvas.activeSelf)
+                    {
+                        dialogueCanvas.GetComponent<Animator>().enabled = false;
+                        dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                    }
+                    else if (dialogueVRCanvas.activeSelf)
+                    {
+                        dialogueVRCanvas.GetComponent<Animator>().enabled = false;
+                        dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                    }
                 }
             }
 
-            // 3
             if (debugComponent)
                 Debug.Log("Start conversation with " + dialogueTree.characterName);
 
-            // 4
+            // Set name text fields with the name of the person talking in the dialogueTree
             nameText.text = dialogueTree.characterName;
-
-            // 5
             nameVRText.text = dialogueTree.characterName;
 
-            // 6
+            // Clear queue for new dialogue to be used.
             sentences.Clear();
 
-            // 7
+            // Get each sentence and audio clip in the queues
             foreach (string sentence in dialogueTree.dialogueTreeElements)
             {
                 sentences.Enqueue(sentence);
             }
-
-            // 8
             foreach (AudioClip clip in dialogueTree.dialogueTreeAudioClips)
             {
                 sentenceAudioClips.Enqueue(clip);
             }
 
-            // 9
+            // Display First Sentence of the queues
             DisplayNextSentence();
         }
 
+        /// <summary>
+        /// A method to play the next string and audioclip in the queues.
+        /// </summary>
         public void DisplayNextSentence()
         {
 
@@ -167,13 +191,14 @@ namespace DialogueSystem
                         dialogueText.text = currentSentence;
                         dialogueVRText.text = currentSentence;
 
-                        StartCoroutine(DisplayNextSentenceTimer());
+                        isTypeSentenceCoroutineRunning = false; // Make sure this is false after sentence is done typing.
                     }
                     else
                     {
                         // Change speed of the text without changing the value for the setting. Create private copy of the value.
                         if (speedPrintFinish)
                         {
+                            // The fastest is actually one frame.
                             currentPrintLetterDelay = 0.0f;
                             currentSentenceDelay = 0.0f;
                         }
@@ -183,28 +208,39 @@ namespace DialogueSystem
                 return;
             }
 
+            // Reset delay times
             currentPrintLetterDelay = printLetterDelay;
             currentSentenceDelay = sentenceDelay;
 
+            // End dialogue if queues are empty
             if (sentences.Count == 0)
             {
                 EndDialogue();
                 return;
             }
 
+            // Adjust textDisplayWidth to fit more center with the camera screen.
             dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueText.GetComponent<RectTransform>().sizeDelta.y);
             dialogueVRText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y);
 
+            // Save sentence and audioclip that is being dequeued
             string sentence = sentences.Dequeue();
             AudioClip clip = sentenceAudioClips.Dequeue();
 
             if (debugComponent)
                 Debug.Log(sentence);
 
-            StopAllCoroutines();                    // Stop coroutine before starting new one.
-            StartCoroutine(TypeSentence(sentence, clip)); // Display or type one character at a time.
+
+            StopAllCoroutines();                            // Stop coroutine before starting new one.
+            StartCoroutine(TypeSentence(sentence, clip));   // Display or type one character at a time.
         }
 
+        /// <summary>
+        /// A coroutine method that will type each sentence one character at a time at the set speed and play the audioclip if it is available.
+        /// </summary>
+        /// <param name="sentence">The current sentence that is out of the queue.</param>
+        /// <param name="clip">The current audioclip that is out of the queue.</param>
+        /// <returns></returns>
         private IEnumerator TypeSentence(string sentence, AudioClip clip)
         {
             isTypeSentenceCoroutineRunning = true;
@@ -221,6 +257,7 @@ namespace DialogueSystem
                     Debug.LogError("No audioclip for string displayed! Please place audioclip in AudioClip List for respective string element.");
             }
 
+            // Print full sentence or type each character individually.
             if (instantPrintBegin)
             {
                 int punctutationCount = 0;
@@ -230,7 +267,7 @@ namespace DialogueSystem
                     // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
                     {
-                        punctutationCount++;
+                        punctutationCount++;    // Keep track of punctuation in each node
                     }
                 }
 
@@ -242,6 +279,7 @@ namespace DialogueSystem
                 if (debugComponent)
                     Debug.Log("fullSentenceDelay: " + fullSentenceDelay);
 
+                // Play next sentence without button input
                 if (!requireContinueButton)
                 {
                     yield return new WaitForSeconds(fullSentenceDelay);
@@ -253,6 +291,7 @@ namespace DialogueSystem
             }
             else
             {
+                // Clear text fields before printing
                 dialogueText.text = "";
                 dialogueVRText.text = "";
 
@@ -264,11 +303,11 @@ namespace DialogueSystem
                     // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
                     {
-                        yield return new WaitForSeconds(currentSentenceDelay);
+                        yield return new WaitForSeconds(currentSentenceDelay);      // Delay next sentence
                         //yield return null; // Wait a single frame/tick
                     }
                     else
-                        yield return new WaitForSeconds(currentPrintLetterDelay);
+                        yield return new WaitForSeconds(currentPrintLetterDelay);   // Delay character print
                 }
 
                 // If moving on with the next dialogue to type requires input, then
@@ -286,37 +325,34 @@ namespace DialogueSystem
                 }
             }
 
-            isTypeSentenceCoroutineRunning = false;
+            isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
         }
 
-        private IEnumerator DisplayNextSentenceTimer()
-        {
-            yield return new WaitForSeconds(currentSentenceDelay);
-
-            isTypeSentenceCoroutineRunning = false;
-
-            DisplayNextSentence();
-        }
-
+        /// <summary>
+        /// A method for ending current dialogue tree.
+        /// </summary>
         private void EndDialogue()
         {
+            // Stop audio
             audioSource.Stop();
 
             if (debugComponent)
                 Debug.Log("End of conversation.");
 
+            // Close the dialogue box with animation or local scale change.
             if (useOpenCloseAnimation)
             {
-                dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
-
-                dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+                if (dialogueCanvas.activeSelf)
+                    dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+                else if (dialogueVRCanvas.activeSelf)
+                    dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
             }
             else
             {
-                //dialogueCanvas.SetActive(false);
-                dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
-
-                dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+                if (dialogueCanvas.activeSelf)
+                    dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+                else if (dialogueVRCanvas.activeSelf)
+                    dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
             }
         }
     }
