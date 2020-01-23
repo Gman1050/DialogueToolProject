@@ -16,11 +16,15 @@ namespace DialogueSystem
         public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxCanvas
         public Text nameText;
         public Text dialogueText;
+        public RawImage autoContinueDialogueRawImage;
+        public Image inputContinueDialogueImage;
 
         [Header("Dialogue VR Canvas Elements:")]
         public GameObject dialogueVRCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxVRCanvas
         public Text nameVRText;
         public Text dialogueVRText;
+        public RawImage autoContinueDialogueVRRawImage;
+        public Image inputContinueDialogueVRImage;
 
         [Header("Dialogue Print Settings:")]
         [Range(650, 1800)] public float textDisplayWidth = 800.0f;
@@ -40,8 +44,10 @@ namespace DialogueSystem
         [Range(0.25f, 2.0f)] public float sentenceDelay = 1.0f;
         private float currentSentenceDelay;
 
-        [Header("Dialogue Animation Settings:")]
+        [Header("Dialogue Animation/Image Settings:")]
         public bool useOpenCloseAnimation = false;
+        [Range(0, 1)] public float inputContinueDialogueImageFadeSpeed = 0.15f;
+        public float autoContinueDialogueImageScrollSpeed = 2.0f;
 
         [Header("Dialogue Audio Settings:")]
         [Range(0, 1)] public float volume = 1.0f;
@@ -99,6 +105,9 @@ namespace DialogueSystem
 
             if (instantPrintFinish)
                 speedPrintFinish = false;
+
+            // Set animation speed of the the image fade
+            //inputContinueDialogueImage.GetComponent<Animator>().;
         }
 
         /// <summary>
@@ -203,6 +212,7 @@ namespace DialogueSystem
                             currentSentenceDelay = 0.0f;
                         }
                     }
+                    inputContinueDialogueImage.GetComponent<Animator>().enabled = true;
                 }
 
                 return;
@@ -244,7 +254,9 @@ namespace DialogueSystem
         private IEnumerator TypeSentence(string sentence, AudioClip clip)
         {
             isTypeSentenceCoroutineRunning = true;
-            
+
+            inputContinueDialogueImage.GetComponent<Animator>().enabled = false;
+
             currentSentence = sentence;
 
             audioSource.Stop();
@@ -324,6 +336,8 @@ namespace DialogueSystem
                     DisplayNextSentence();
                 }
             }
+
+            inputContinueDialogueImage.GetComponent<Animator>().enabled = true;
 
             isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
         }
