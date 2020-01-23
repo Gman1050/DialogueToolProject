@@ -47,7 +47,7 @@ namespace DialogueSystem
         [Header("Dialogue Animation/Image Settings:")]
         public bool useOpenCloseAnimation = false;
         [Range(0, 1)] public float inputContinueDialogueImageFadeSpeed = 0.15f;
-        public float autoContinueDialogueImageScrollSpeed = 2.0f;
+        [Range(0, 1)] public float autoContinueDialogueImageScrollSpeed = 2.0f;
 
         [Header("Dialogue Audio Settings:")]
         [Range(0, 1)] public float volume = 1.0f;
@@ -87,6 +87,10 @@ namespace DialogueSystem
             currentPrintLetterDelay = printLetterDelay;
             currentSentenceDelay = sentenceDelay;
 
+            // Update speed of animation with current settings
+            inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+            //inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+
             // Used for testing
             if (playAtStart)
             {
@@ -120,6 +124,12 @@ namespace DialogueSystem
             {
                 Debug.LogError("Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
                 return;
+            }
+
+            if (!requireContinueButton)
+            {
+                autoContinueDialogueRawImage.gameObject.SetActive(true);
+                autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageScrollSpeed;
             }
 
             // Choose to print string and play audio or just play audio without a respective string
@@ -212,7 +222,16 @@ namespace DialogueSystem
                             currentSentenceDelay = 0.0f;
                         }
                     }
-                    inputContinueDialogueImage.GetComponent<Animator>().enabled = true;
+
+                    if (requireContinueButton)
+                    {
+                        inputContinueDialogueImage.gameObject.SetActive(true);
+                        //inputContinueDialogueVRImage.gameObject.SetActive(true);
+
+                        // Update speed of animation with current settings
+                        inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+                        //inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+                    }
                 }
 
                 return;
@@ -255,7 +274,11 @@ namespace DialogueSystem
         {
             isTypeSentenceCoroutineRunning = true;
 
-            inputContinueDialogueImage.GetComponent<Animator>().enabled = false;
+            if (requireContinueButton)
+            {
+                inputContinueDialogueImage.gameObject.SetActive(false);
+                //inputContinueDialogueVRImage.gameObject.SetActive(false);
+            }
 
             currentSentence = sentence;
 
@@ -337,7 +360,15 @@ namespace DialogueSystem
                 }
             }
 
-            inputContinueDialogueImage.GetComponent<Animator>().enabled = true;
+            if (requireContinueButton)
+            {
+                inputContinueDialogueImage.gameObject.SetActive(true);
+                //inputContinueDialogueVRImage.gameObject.SetActive(true);
+
+                // Update speed of animation with current settings
+                inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+                //inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+            }
 
             isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
         }
@@ -368,6 +399,8 @@ namespace DialogueSystem
                 else if (dialogueVRCanvas.activeSelf)
                     dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
             }
+
+            autoContinueDialogueRawImage.gameObject.SetActive(false);
         }
     }
 }

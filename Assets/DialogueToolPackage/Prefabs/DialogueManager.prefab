@@ -49,22 +49,24 @@ MonoBehaviour:
   dialogueCanvas: {fileID: 6903146606166611385}
   nameText: {fileID: 1675207789646380898}
   dialogueText: {fileID: 7566419155850839594}
-  autoContinueDialogueImage: {fileID: 0}
-  inputContinueDialogueImage: {fileID: 0}
+  autoContinueDialogueRawImage: {fileID: 521584809018973254}
+  inputContinueDialogueImage: {fileID: 7793452290284099747}
   dialogueVRCanvas: {fileID: 5128987839434566489}
   nameVRText: {fileID: 1143558731806294402}
   dialogueVRText: {fileID: 8205670818525083850}
-  autoContinueDialogueVRImage: {fileID: 0}
+  autoContinueDialogueVRRawImage: {fileID: 0}
   inputContinueDialogueVRImage: {fileID: 0}
   textDisplayWidth: 800
   printLetterDelay: 0.05
   instantPrintBegin: 0
   printDialogue: 1
-  requireContinueButton: 1
+  requireContinueButton: 0
   instantPrintFinish: 1
   speedPrintFinish: 0
   sentenceDelay: 1
   useOpenCloseAnimation: 1
+  inputContinueDialogueImageFadeSpeed: 0.2
+  autoContinueDialogueImageScrollSpeed: 8
   volume: 1
   playWithAudio: 1
   playAtStart: 1
@@ -180,7 +182,7 @@ GameObject:
   - component: {fileID: 1207945092}
   - component: {fileID: 1207945093}
   m_Layer: 5
-  m_Name: InputContinueDialogueImage (1)
+  m_Name: InputContinueDialogueImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -292,7 +294,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5945237522973823326
 RectTransform:
   m_ObjectHideFlags: 0
@@ -332,7 +334,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: e6f143783ef51364889155d9bc7f0035, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
