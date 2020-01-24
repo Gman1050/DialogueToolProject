@@ -66,11 +66,18 @@ MonoBehaviour:
   sentenceDelay: 1
   useOpenCloseAnimation: 1
   inputContinueDialogueImageFadeSpeed: 0.2
-  autoContinueDialogueImageScrollSpeed: 8
+  autoContinueDialogueImageScrollSpeed: 0.5
+  openWithAnimation: {fileID: 0}
+  closeWithAnimation: {fileID: 0}
+  openWithoutAnimation: {fileID: 0}
+  closeWithoutAnimation: {fileID: 0}
   volume: 1
   playWithAudio: 1
   playAtStart: 1
   dialogueTreeTest: {fileID: 11400000, guid: 47da7da97df1d4d4898c163ff95983c1, type: 2}
+  useTestButtons: 1
+  testButtons: {fileID: 3620067639249898266}
+  testVRButtons: {fileID: 3088383400477341178}
   debugComponent: 1
 --- !u!82 &337914408017021221
 AudioSource:
@@ -288,6 +295,8 @@ GameObject:
   - component: {fileID: 5945237522973823326}
   - component: {fileID: 889977421325124125}
   - component: {fileID: 521584809018973254}
+  - component: {fileID: 860428741}
+  - component: {fileID: 860428742}
   m_Layer: 5
   m_Name: AutoContinueDialogueImage
   m_TagString: Untagged
@@ -347,6 +356,40 @@ MonoBehaviour:
     y: 0
     width: 1
     height: 1
+--- !u!111 &860428741
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6066293971623780481}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 0}
+  m_Animations: []
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_CullingType: 0
+--- !u!95 &860428742
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6066293971623780481}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 7ac49b6ebf2214c4dba9605dcbf7d1b7, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1001 &3042242304188294875
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -512,6 +555,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &3088383400477341178 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 64197284973581089, guid: 8ffa0c8ad6679804c850dc80b563e76d,
+    type: 3}
+  m_PrefabInstance: {fileID: 3042242304188294875}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5761489553423576606
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -519,11 +568,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2198653673865033881}
     m_Modifications:
-    - target: {fileID: 991699813811609579, guid: ec3a864b638a4c84d9b61268f33b35cc,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1759145408136988993, guid: ec3a864b638a4c84d9b61268f33b35cc,
         type: 3}
       propertyPath: m_Name
@@ -639,6 +683,11 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9064053281492247812, guid: ec3a864b638a4c84d9b61268f33b35cc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ec3a864b638a4c84d9b61268f33b35cc, type: 3}
 --- !u!224 &7145766719022697985 stripped
@@ -683,3 +732,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &3620067639249898266 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9064053281492247812, guid: ec3a864b638a4c84d9b61268f33b35cc,
+    type: 3}
+  m_PrefabInstance: {fileID: 5761489553423576606}
+  m_PrefabAsset: {fileID: 0}

@@ -48,6 +48,10 @@ namespace DialogueSystem
         public bool useOpenCloseAnimation = false;
         [Range(0, 1)] public float inputContinueDialogueImageFadeSpeed = 0.15f;
         [Range(0, 1)] public float autoContinueDialogueImageScrollSpeed = 2.0f;
+        public AudioClip openWithAnimation;
+        public AudioClip closeWithAnimation;
+        public AudioClip openWithoutAnimation;
+        public AudioClip closeWithoutAnimation;
 
         [Header("Dialogue Audio Settings:")]
         [Range(0, 1)] public float volume = 1.0f;
@@ -57,6 +61,9 @@ namespace DialogueSystem
         [Header("Dialogue Test Settings:")]
         public bool playAtStart = false;
         public DialogueTree dialogueTreeTest;
+        public bool useTestButtons = false;
+        public GameObject testButtons;
+        public GameObject testVRButtons;
 
         [Header("Debug Settings:")]
         public bool debugComponent = false;
@@ -110,8 +117,9 @@ namespace DialogueSystem
             if (instantPrintFinish)
                 speedPrintFinish = false;
 
-            // Set animation speed of the the image fade
-            //inputContinueDialogueImage.GetComponent<Animator>().;
+           
+            testButtons.SetActive(useTestButtons);
+            testVRButtons.SetActive(useTestButtons);
         }
 
         /// <summary>
@@ -150,6 +158,9 @@ namespace DialogueSystem
                         dialogueVRCanvas.GetComponent<Animator>().SetBool("canTransition", true);
                         dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", true);
                     }
+
+                    if (openWithAnimation)
+                        audioSource.PlayOneShot(openWithAnimation);
                 }
                 else
                 {
@@ -163,6 +174,9 @@ namespace DialogueSystem
                         dialogueVRCanvas.GetComponent<Animator>().enabled = false;
                         dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
                     }
+
+                    if (openWithoutAnimation)
+                        audioSource.PlayOneShot(openWithoutAnimation);
                 }
             }
 
@@ -312,15 +326,21 @@ namespace DialogueSystem
                 float fullSentenceDelay = (currentPrintLetterDelay * sentence.Length) + (punctutationCount * currentSentenceDelay) + currentSentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * sentence delay time) + end of dialogueTreeElement delay time.
 
                 if (debugComponent)
+                {
                     Debug.Log("fullSentenceDelay: " + fullSentenceDelay);
+                    Debug.Log("clip.length: " + clip.length);
+                }
 
                 // Play next sentence without button input
                 if (!requireContinueButton)
                 {
-                    yield return new WaitForSeconds(fullSentenceDelay);
+                    if (clip)
+                        yield return new WaitForSeconds(clip.length);
+                    else
+                        yield return new WaitForSeconds(fullSentenceDelay);
 
                     isTypeSentenceCoroutineRunning = false;
-
+                    
                     DisplayNextSentence();
                 }
             }
@@ -391,6 +411,9 @@ namespace DialogueSystem
                     dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
                 else if (dialogueVRCanvas.activeSelf)
                     dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+
+                if (closeWithAnimation)
+                    audioSource.PlayOneShot(closeWithAnimation);
             }
             else
             {
@@ -398,6 +421,9 @@ namespace DialogueSystem
                     dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
                 else if (dialogueVRCanvas.activeSelf)
                     dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+
+                if (closeWithoutAnimation)
+                    audioSource.PlayOneShot(closeWithoutAnimation);
             }
 
             autoContinueDialogueRawImage.gameObject.SetActive(false);
