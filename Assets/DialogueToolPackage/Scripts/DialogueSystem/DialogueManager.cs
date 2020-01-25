@@ -46,8 +46,8 @@ namespace DialogueSystem
 
         [Header("Dialogue Animation/Image Settings:")]
         public bool useOpenCloseAnimation = false;
-        [Range(0, 1)] public float inputContinueDialogueImageFadeSpeed = 0.15f;
-        [Range(0, 1)] public float autoContinueDialogueImageScrollSpeed = 2.0f;
+        [Range(0, 1)] public float inputContinueDialogueImageAnimationSpeed = 0.15f;
+        [Range(0, 1)] public float autoContinueDialogueImageAnimationSpeed = 2.0f;
         public AudioClip openWithAnimation;
         public AudioClip closeWithAnimation;
         public AudioClip openWithoutAnimation;
@@ -94,9 +94,11 @@ namespace DialogueSystem
             currentPrintLetterDelay = printLetterDelay;
             currentSentenceDelay = sentenceDelay;
 
-            // Update speed of animation with current settings
-            inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
-            //inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+            // Update speed of animations with current settings
+            inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+            inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+            autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+            autoContinueDialogueVRRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
 
             // Used for testing
             if (playAtStart)
@@ -137,7 +139,8 @@ namespace DialogueSystem
             if (!requireContinueButton)
             {
                 autoContinueDialogueRawImage.gameObject.SetActive(true);
-                autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageScrollSpeed;
+                autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+                autoContinueDialogueVRRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
             }
 
             // Choose to print string and play audio or just play audio without a respective string
@@ -240,11 +243,11 @@ namespace DialogueSystem
                     if (requireContinueButton)
                     {
                         inputContinueDialogueImage.gameObject.SetActive(true);
-                        //inputContinueDialogueVRImage.gameObject.SetActive(true);
+                        inputContinueDialogueVRImage.gameObject.SetActive(true);
 
                         // Update speed of animation with current settings
-                        inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
-                        //inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+                        inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                        inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
                     }
                 }
 
@@ -291,7 +294,7 @@ namespace DialogueSystem
             if (requireContinueButton)
             {
                 inputContinueDialogueImage.gameObject.SetActive(false);
-                //inputContinueDialogueVRImage.gameObject.SetActive(false);
+                inputContinueDialogueVRImage.gameObject.SetActive(false);
             }
 
             currentSentence = sentence;
@@ -357,10 +360,7 @@ namespace DialogueSystem
 
                     // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
-                    {
                         yield return new WaitForSeconds(currentSentenceDelay);      // Delay next sentence
-                        //yield return null; // Wait a single frame/tick
-                    }
                     else
                         yield return new WaitForSeconds(currentPrintLetterDelay);   // Delay character print
                 }
@@ -368,11 +368,12 @@ namespace DialogueSystem
                 // If moving on with the next dialogue to type requires input, then
                 if (!requireContinueButton)
                 {
+
                     // If last character is not any form of punctutation, then delay next sentence
                     if (!(sentence.EndsWith(",") || sentence.EndsWith(";") || sentence.EndsWith(".") || sentence.EndsWith("?") || sentence.EndsWith("!")))
-                    {
                         yield return new WaitForSeconds(currentSentenceDelay);
-                    }
+
+                    yield return new WaitUntil(() => !audioSource.isPlaying); // Wait until audioclip for the dialogue sentence has stopped playing if it hasn't.
 
                     isTypeSentenceCoroutineRunning = false;
 
@@ -383,11 +384,11 @@ namespace DialogueSystem
             if (requireContinueButton)
             {
                 inputContinueDialogueImage.gameObject.SetActive(true);
-                //inputContinueDialogueVRImage.gameObject.SetActive(true);
+                inputContinueDialogueVRImage.gameObject.SetActive(true);
 
                 // Update speed of animation with current settings
-                inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
-                //inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageFadeSpeed;
+                inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
             }
 
             isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
@@ -426,6 +427,7 @@ namespace DialogueSystem
                     audioSource.PlayOneShot(closeWithoutAnimation);
             }
 
+            inputContinueDialogueImage.gameObject.SetActive(false);
             autoContinueDialogueRawImage.gameObject.SetActive(false);
         }
     }
