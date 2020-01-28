@@ -12,12 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36ba719a377cb7e4abbbe0414ab26baa, type: 3}
   m_Name: Introduction
   m_EditorClassIdentifier: 
-  characterName: Ryan
-  dialogueTreeElements:
-  - Hello there. My name is Ryan.
-  - I am here to tell you something.
-  - Something cool...
-  dialogueTreeAudioClips:
-  - {fileID: 8300000, guid: a7ec8286e3e850b44a43386f379f11d1, type: 3}
-  - {fileID: 8300000, guid: ced6756e42da3664c96d1be4b8548af8, type: 3}
-  - {fileID: 8300000, guid: 2b4914a75fbf282429328f3c291fd8d3, type: 3}
+  dialogueNodeElements:
+  - nodeCharacterName: Ryan
+    nodeDialogueString: Hello there. My name is Ryan.
+    nodeDialogueAudioClip: {fileID: 8300000, guid: a7ec8286e3e850b44a43386f379f11d1,
+      type: 3}
+  - nodeCharacterName: Ryan
+    nodeDialogueString: I am here to tell you something.
+    nodeDialogueAudioClip: {fileID: 8300000, guid: ced6756e42da3664c96d1be4b8548af8,
+      type: 3}
+  - nodeCharacterName: Ryan
+    nodeDialogueString: Something cool...
+    nodeDialogueAudioClip: {fileID: 8300000, guid: 2b4914a75fbf282429328f3c291fd8d3,
+      type: 3}

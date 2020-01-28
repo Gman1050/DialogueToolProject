@@ -98,8 +98,8 @@ namespace Tests
             Assert.IsNotNull(animatorVR);
             Assert.IsNotNull(rtVR);
 
-            animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas.controller");
-            animatorVR.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas.controller");
+            animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas/DialogueBoxCanvas.controller");
+            animatorVR.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas/DialogueBoxCanvas.controller");
 
             Assert.IsNotNull(animator.runtimeAnimatorController);
             Assert.IsNotNull(animatorVR.runtimeAnimatorController);
@@ -170,14 +170,6 @@ namespace Tests
             }
 
             // 3
-            if (debugComponent)
-            {
-                Assert.IsTrue(debugComponent);
-                Debug.Log("Start conversation with " + dialogueTreeTest.characterName);
-                LogAssert.Expect(LogType.Log, "Start conversation with " + dialogueTreeTest.characterName);
-            }
-
-            // 4
             GameObject nameTextObject = new GameObject();
             Assert.IsNotNull(nameTextObject);
 
@@ -185,40 +177,40 @@ namespace Tests
             //nameText = dialogueCanvas.transform.GetChild(0).GetChild(0).GetComponent<Text>();
             Assert.IsNotNull(nameText);
             Assert.IsEmpty(nameText.text);
-            Assert.IsNotEmpty(dialogueTreeTest.characterName);
+            //Assert.IsNotEmpty(dialogueTreeTest.characterName);
 
-            nameText.text = dialogueTreeTest.characterName;
-            Assert.AreEqual(dialogueTreeTest.characterName, nameText.text);
+            //nameText.text = dialogueTreeTest.characterName;
+            //Assert.AreEqual(dialogueTreeTest.characterName, nameText.text);
 
-            // 5
+            // 4
             GameObject nameVRTextObject = new GameObject();
             nameVRText = nameVRTextObject.AddComponent<Text>();
             //nameVRText = dialogueVRCanvas.transform.GetChild(0).GetChild(0).GetComponent<Text>();
             Assert.IsNotNull(nameVRTextObject);
             Assert.IsNotNull(nameVRText);
 
-            nameVRText.text = dialogueTreeTest.characterName;
-            Assert.AreEqual(dialogueTreeTest.characterName, nameVRText.text);
+            //nameVRText.text = dialogueTreeTest.characterName;
+            //Assert.AreEqual(dialogueTreeTest.characterName, nameVRText.text);
 
-            // 6
+            // 5
             sentences.Clear();
             Assert.AreEqual(0, sentences.Count);
 
-            // 7
-            foreach (string sentence in dialogueTreeTest.dialogueTreeElements)
+            // 6
+            //foreach (string sentence in dialogueTreeTest.dialogueTreeElements)
             {
-                sentences.Enqueue(sentence);
+            //    sentences.Enqueue(sentence);
             }
-            Assert.AreEqual(dialogueTreeTest.dialogueTreeElements.Count, sentences.Count);
+            //Assert.AreEqual(dialogueTreeTest.dialogueTreeElements.Count, sentences.Count);
+
+            // 7
+            //foreach (AudioClip clip in dialogueTreeTest.dialogueTreeAudioClips)
+            {
+            //    sentenceAudioClips.Enqueue(clip);
+            }
+            //Assert.AreEqual(dialogueTreeTest.dialogueTreeAudioClips.Count, sentenceAudioClips.Count);
 
             // 8
-            foreach (AudioClip clip in dialogueTreeTest.dialogueTreeAudioClips)
-            {
-                sentenceAudioClips.Enqueue(clip);
-            }
-            Assert.AreEqual(dialogueTreeTest.dialogueTreeAudioClips.Count, sentenceAudioClips.Count);
-
-            // 9
             DisplayNextSentenceTest();
         }
 

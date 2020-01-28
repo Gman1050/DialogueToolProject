@@ -27,19 +27,15 @@ namespace DialogueSystem
         /// </summary>
         /// <param name="dialogueTreeElements">The list of strings for the new dialogueTree.</param>
         /// <param name="dialogueTreeAudioClips">The list of Audioclips for the new dialogueTree.</param>
-        public void SetDialogueTreeContent(List<string> dialogueTreeElements, List<AudioClip> dialogueTreeAudioClips)
+        public void SetDialogueTreeContent(List<DialogueTree.DialogueNode> dialogueNodeElements)
         {
-            if (dialogueTreeElements == null)
+            if (dialogueNodeElements == null)
+            {
                 Debug.LogError("Argument dialogueTreeElements is null. If you wish to not have strings, then pass in a new List<string>() instead.");
-
-            if (dialogueTreeAudioClips == null)
-                Debug.LogError("Argument dialogueTreeAudioClips is null. If you wish to not have audioclips, then pass in a new List<AudioClip>() instead.");
-
-            if (dialogueTreeElements == null || dialogueTreeAudioClips == null)
                 return;
+            }
 
-            dialogueTree.dialogueTreeElements = dialogueTreeElements;
-            dialogueTree.dialogueTreeAudioClips = dialogueTreeAudioClips;
+            dialogueTree.dialogueNodeElements = dialogueNodeElements;
         }
     }
 }

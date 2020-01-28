@@ -12,8 +12,7 @@ namespace Tests
     {
         public DialogueTree dialogueTree;
 
-        private List<string> dialogueTreeElementsTemp;
-        private List<AudioClip> dialogueTreeAudioClipsTemp;
+        private List<DialogueTree.DialogueNode> dialogueNodeElementsTemp;
 
         DialogueManagerTest dialogueManagerTestInstance;
 
@@ -26,10 +25,8 @@ namespace Tests
             Assert.IsNotNull(dialogueManagerTestInstance);
             Assert.IsNotNull(dialogueTree);
 
-            dialogueTreeElementsTemp = dialogueTree.dialogueTreeElements;
-            dialogueTreeAudioClipsTemp = dialogueTree.dialogueTreeAudioClips;
-            Assert.AreEqual(dialogueTree.dialogueTreeElements, dialogueTreeElementsTemp);
-            Assert.AreEqual(dialogueTree.dialogueTreeAudioClips, dialogueTreeAudioClipsTemp);
+            dialogueNodeElementsTemp = dialogueTree.dialogueNodeElements;
+            Assert.AreEqual(dialogueTree.dialogueNodeElements, dialogueNodeElementsTemp);
         }
 
         [Test, Order(1)]
@@ -51,56 +48,36 @@ namespace Tests
         [Test, Order(2)]
         public void SetDialogueTreeContentTest()
         {
-            List<string> dialogueTreeElements = new List<string>();
-            List<AudioClip> dialogueTreeAudioClips = new List<AudioClip>();
+            List<DialogueTree.DialogueNode> dialogueNodeElements = new List<DialogueTree.DialogueNode>();
 
-            if (dialogueTreeElements == null)
+            if (dialogueNodeElements == null)
             {
-                Assert.IsNull(dialogueTreeElements);
-                Debug.LogError("Argument dialogueTreeElements is null. If you wish to not have strings, then pass in a new List<string>() instead.");
-                LogAssert.Expect(LogType.Error, "Argument dialogueTreeElements is null. If you wish to not have strings, then pass in a new List<string>() instead.");
-            }
-
-            if (dialogueTreeAudioClips == null)
-            {
-                Assert.IsNull(dialogueTreeAudioClips);
-                Debug.LogError("Argument dialogueTreeAudioClips is null. If you wish to not have audioclips, then pass in a new List<AudioClip>() instead.");
-                LogAssert.Expect(LogType.Error, "Argument dialogueTreeAudioClips is null. If you wish to not have audioclips, then pass in a new List<AudioClip>() instead.");
-            }
-
-            if (dialogueTreeElements == null || dialogueTreeAudioClips == null)
-            {
-                Assert.IsTrue(dialogueTreeElements == null || dialogueTreeAudioClips == null);
+                Assert.IsNull(dialogueNodeElements);
+                Debug.LogError("Argument dialogueNodeElements is null. If you wish to not have strings, then pass in a new List<DialogueTree.DialogueNode>() instead.");
+                LogAssert.Expect(LogType.Error, "Argument dialogueNodeElements is null. If you wish to not have strings, then pass in a new List<DialogueTree.DialogueNode>() instead.");
                 return;
             }
 
-            Assert.IsNotNull(dialogueTreeElements);
-            Assert.IsNotNull(dialogueTreeAudioClips);
+            Assert.IsNotNull(dialogueNodeElements);
 
-            dialogueTree.dialogueTreeElements = dialogueTreeElements;
-            dialogueTree.dialogueTreeAudioClips = dialogueTreeAudioClips;
+            dialogueTree.dialogueNodeElements = dialogueNodeElements;
 
-            Assert.AreEqual(dialogueTreeElements, dialogueTree.dialogueTreeElements);
-            Assert.AreEqual(dialogueTreeAudioClips, dialogueTree.dialogueTreeAudioClips);
+            Assert.AreEqual(dialogueNodeElements, dialogueTree.dialogueNodeElements);
         }
 
         [TearDown]
         public void Teardown()
         {
             dialogueManagerTestInstance.Teardown();
-            dialogueTree.dialogueTreeElements = dialogueTreeElementsTemp;
-            dialogueTree.dialogueTreeAudioClips = dialogueTreeAudioClipsTemp;
+            dialogueTree.dialogueNodeElements = dialogueNodeElementsTemp;
 
-            Assert.AreEqual(dialogueTreeElementsTemp, dialogueTree.dialogueTreeElements);
-            Assert.AreEqual(dialogueTreeAudioClipsTemp, dialogueTree.dialogueTreeAudioClips);
+            Assert.AreEqual(dialogueNodeElementsTemp, dialogueTree.dialogueNodeElements);
 
             dialogueTree = null;
-            dialogueTreeElementsTemp = null;
-            dialogueTreeAudioClipsTemp = null;
+            dialogueNodeElementsTemp = null;
 
             Assert.IsNull(dialogueTree);
-            Assert.IsNull(dialogueTreeElementsTemp);
-            Assert.IsNull(dialogueTreeAudioClipsTemp);
+            Assert.IsNull(dialogueNodeElementsTemp);
         }
     }
 }

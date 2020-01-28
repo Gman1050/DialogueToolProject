@@ -69,8 +69,7 @@ namespace DialogueSystem
         public bool debugComponent = false;
 
         // Dialogue Queues
-        private Queue<string> sentences;
-        private Queue<AudioClip> sentenceAudioClips;
+        private Queue<DialogueTree.DialogueNode> dialogueNodes; 
 
         private bool isTypeSentenceCoroutineRunning = false;
         private string currentSentence;
@@ -87,8 +86,7 @@ namespace DialogueSystem
         {
             // Initialize Queues and AudioSource 
             audioSource = GetComponent<AudioSource>();
-            sentences = new Queue<string>();
-            sentenceAudioClips = new Queue<AudioClip>();
+            dialogueNodes = new Queue<DialogueTree.DialogueNode>();
 
             // Initialize private fields with these settings
             currentPrintLetterDelay = printLetterDelay;
@@ -127,7 +125,7 @@ namespace DialogueSystem
         /// <summary>
         /// A method to initiate the dialogueTree into a displayable UI.
         /// </summary>
-        /// <param name="dialogueTree">The scriptable object that will be used to extract string and audioclip data for dialogue.</param>
+        /// <param nodeCharacterName="dialogueTree">The scriptable object that will be used to extract string and audioclip data for dialogue.</param>
         public void StartDialogue(DialogueTree dialogueTree)
         {
             if (!printDialogue && !playWithAudio)
@@ -183,24 +181,12 @@ namespace DialogueSystem
                 }
             }
 
-            if (debugComponent)
-                Debug.Log("Start conversation with " + dialogueTree.characterName);
-
-            // Set name text fields with the name of the person talking in the dialogueTree
-            nameText.text = dialogueTree.characterName;
-            nameVRText.text = dialogueTree.characterName;
-
             // Clear queue for new dialogue to be used.
-            sentences.Clear();
+            dialogueNodes.Clear();
 
-            // Get each sentence and audio clip in the queues
-            foreach (string sentence in dialogueTree.dialogueTreeElements)
+            foreach (DialogueTree.DialogueNode node in dialogueTree.dialogueNodeElements)
             {
-                sentences.Enqueue(sentence);
-            }
-            foreach (AudioClip clip in dialogueTree.dialogueTreeAudioClips)
-            {
-                sentenceAudioClips.Enqueue(clip);
+                dialogueNodes.Enqueue(node);
             }
 
             // Display First Sentence of the queues
@@ -213,13 +199,13 @@ namespace DialogueSystem
         public void DisplayNextSentence()
         {
 
-            // Check to see if current sentence is typing first
+            // Check to see if current nodeDialogueString is typing first
             if (isTypeSentenceCoroutineRunning)
             {
                 // Only used if input is required
                 if (requireContinueButton)
                 {
-                    // Instant print the rest of the current sentence
+                    // Instant print the rest of the current nodeDialogueString
                     if (instantPrintFinish)
                     {
                         StopAllCoroutines();                    // Stop coroutine that is currently printing.
@@ -227,7 +213,7 @@ namespace DialogueSystem
                         dialogueText.text = currentSentence;
                         dialogueVRText.text = currentSentence;
 
-                        isTypeSentenceCoroutineRunning = false; // Make sure this is false after sentence is done typing.
+                        isTypeSentenceCoroutineRunning = false; // Make sure this is false after nodeDialogueString is done typing.
                     }
                     else
                     {
@@ -259,7 +245,7 @@ namespace DialogueSystem
             currentSentenceDelay = sentenceDelay;
 
             // End dialogue if queues are empty
-            if (sentences.Count == 0)
+            if (dialogueNodes.Count == 0)
             {
                 EndDialogue();
                 return;
@@ -269,27 +255,34 @@ namespace DialogueSystem
             dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueText.GetComponent<RectTransform>().sizeDelta.y);
             dialogueVRText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y);
 
-            // Save sentence and audioclip that is being dequeued
-            string sentence = sentences.Dequeue();
-            AudioClip clip = sentenceAudioClips.Dequeue();
+            // Save nodeDialogueString and audioclip that is being dequeued
+            string nodeCharacterName = dialogueNodes.Peek().nodeCharacterName;
+            string nodeDialogueString = dialogueNodes.Peek().nodeDialogueString;
+            AudioClip nodeDialogueAudioClip = dialogueNodes.Peek().nodeDialogueAudioClip;
+
+            // Dequeue the current node so your not stuck on it for next call.
+            dialogueNodes.Dequeue();
 
             if (debugComponent)
-                Debug.Log(sentence);
-
+                Debug.Log(nodeCharacterName + ": " + nodeDialogueString);
 
             StopAllCoroutines();                            // Stop coroutine before starting new one.
-            StartCoroutine(TypeSentence(sentence, clip));   // Display or type one character at a time.
+            StartCoroutine(TypeNodeDialogueString(nodeCharacterName, nodeDialogueString, nodeDialogueAudioClip));   // Display or type one character at a time.
         }
 
         /// <summary>
-        /// A coroutine method that will type each sentence one character at a time at the set speed and play the audioclip if it is available.
+        /// A coroutine method that will type each nodeDialogueString one character at a time at the set speed and play the audioclip if it is available.
         /// </summary>
-        /// <param name="sentence">The current sentence that is out of the queue.</param>
-        /// <param name="clip">The current audioclip that is out of the queue.</param>
+        /// <param nodeCharacterName="nodeDialogueString">The current nodeDialogueString that is out of the queue.</param>
+        /// <param nodeCharacterName="nodeDialogueAudioClip">The current audioclip that is out of the queue.</param>
         /// <returns></returns>
-        private IEnumerator TypeSentence(string sentence, AudioClip clip)
+        private IEnumerator TypeNodeDialogueString(string nodeCharacterName, string nodeDialogueString, AudioClip nodeDialogueAudioClip)
         {
             isTypeSentenceCoroutineRunning = true;
+
+            // Set nodeCharacterName text fields with the nodeCharacterName of the person talking in the dialogueTree
+            nameText.text = nodeCharacterName;
+            nameVRText.text = nodeCharacterName;
 
             if (requireContinueButton)
             {
@@ -297,48 +290,48 @@ namespace DialogueSystem
                 inputContinueDialogueVRImage.gameObject.SetActive(false);
             }
 
-            currentSentence = sentence;
+            currentSentence = nodeDialogueString;
 
             audioSource.Stop();
 
             if (playWithAudio)
             {
-                if (clip)
-                    audioSource.PlayOneShot(clip, volume);
+                if (nodeDialogueAudioClip)
+                    audioSource.PlayOneShot(nodeDialogueAudioClip, volume);
                 else
                     Debug.LogError("No audioclip for string displayed! Please place audioclip in AudioClip List for respective string element.");
             }
 
-            // Print full sentence or type each character individually.
+            // Print full nodeDialogueString or type each character individually.
             if (instantPrintBegin)
             {
                 int punctutationCount = 0;
 
-                foreach (char letter in sentence.ToCharArray())
+                foreach (char letter in nodeDialogueString.ToCharArray())
                 {
-                    // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
+                    // If character is any form of punctutation, then delay next nodeDialogueString. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
                     {
                         punctutationCount++;    // Keep track of punctuation in each node
                     }
                 }
 
-                dialogueText.text = sentence;         // Display full sentence instantly
-                dialogueVRText.text = sentence;         // Display full sentence instantly
+                dialogueText.text = nodeDialogueString;         // Display full nodeDialogueString instantly
+                dialogueVRText.text = nodeDialogueString;         // Display full nodeDialogueString instantly
 
-                float fullSentenceDelay = (currentPrintLetterDelay * sentence.Length) + (punctutationCount * currentSentenceDelay) + currentSentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * sentence delay time) + end of dialogueTreeElement delay time.
+                float fullSentenceDelay = (currentPrintLetterDelay * nodeDialogueString.Length) + (punctutationCount * currentSentenceDelay) + currentSentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * nodeDialogueString delay time) + end of dialogueTreeElement delay time.
 
                 if (debugComponent)
                 {
                     Debug.Log("fullSentenceDelay: " + fullSentenceDelay);
-                    Debug.Log("clip.length: " + clip.length);
+                    Debug.Log("nodeDialogueAudioClip.length: " + nodeDialogueAudioClip.length);
                 }
 
-                // Play next sentence without button input
+                // Play next nodeDialogueString without button input
                 if (!requireContinueButton)
                 {
-                    if (clip)
-                        yield return new WaitForSeconds(clip.length);
+                    if (nodeDialogueAudioClip)
+                        yield return new WaitForSeconds(nodeDialogueAudioClip.length);
                     else
                         yield return new WaitForSeconds(fullSentenceDelay);
 
@@ -353,14 +346,14 @@ namespace DialogueSystem
                 dialogueText.text = "";
                 dialogueVRText.text = "";
 
-                foreach (char letter in sentence.ToCharArray())
+                foreach (char letter in nodeDialogueString.ToCharArray())
                 {
                     dialogueText.text += letter;
                     dialogueVRText.text += letter;
 
-                    // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
+                    // If character is any form of punctutation, then delay next nodeDialogueString. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
-                        yield return new WaitForSeconds(currentSentenceDelay);      // Delay next sentence
+                        yield return new WaitForSeconds(currentSentenceDelay);      // Delay next nodeDialogueString
                     else
                         yield return new WaitForSeconds(currentPrintLetterDelay);   // Delay character print
                 }
@@ -369,11 +362,11 @@ namespace DialogueSystem
                 if (!requireContinueButton)
                 {
 
-                    // If last character is not any form of punctutation, then delay next sentence
-                    if (!(sentence.EndsWith(",") || sentence.EndsWith(";") || sentence.EndsWith(".") || sentence.EndsWith("?") || sentence.EndsWith("!")))
+                    // If last character is not any form of punctutation, then delay next nodeDialogueString
+                    if (!(nodeDialogueString.EndsWith(",") || nodeDialogueString.EndsWith(";") || nodeDialogueString.EndsWith(".") || nodeDialogueString.EndsWith("?") || nodeDialogueString.EndsWith("!")))
                         yield return new WaitForSeconds(currentSentenceDelay);
 
-                    yield return new WaitUntil(() => !audioSource.isPlaying); // Wait until audioclip for the dialogue sentence has stopped playing if it hasn't.
+                    yield return new WaitUntil(() => !audioSource.isPlaying); // Wait until audioclip for the dialogue nodeDialogueString has stopped playing if it hasn't.
 
                     isTypeSentenceCoroutineRunning = false;
 
