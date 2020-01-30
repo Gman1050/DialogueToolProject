@@ -137,6 +137,7 @@ namespace DialogueSystem
             if (!requireContinueButton)
             {
                 autoContinueDialogueRawImage.gameObject.SetActive(true);
+                autoContinueDialogueVRRawImage.gameObject.SetActive(true);
                 autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
                 autoContinueDialogueVRRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
             }

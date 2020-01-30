@@ -65,7 +65,7 @@ namespace Tests
         public GameObject testVRButtons;
 
         // Debug Settings
-        public bool debugComponent = true;
+        public bool debugComponent = false;
 
         // Dialogue Queues
         private Queue<DialogueTree.DialogueNode> dialogueNodes;
@@ -154,10 +154,12 @@ namespace Tests
                 Assert.IsTrue(!requireContinueButton);
 
                 autoContinueDialogueRawImage.gameObject.SetActive(true);
+                autoContinueDialogueVRRawImage.gameObject.SetActive(true);
                 autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
                 autoContinueDialogueVRRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
 
                 Assert.IsTrue(autoContinueDialogueRawImage.gameObject.activeSelf);
+                Assert.IsTrue(autoContinueDialogueVRRawImage.gameObject.activeSelf);
                 Assert.AreEqual(autoContinueDialogueImageAnimationSpeed, autoContinueDialogueRawImage.GetComponent<Animator>().speed);
                 Assert.AreEqual(autoContinueDialogueImageAnimationSpeed, autoContinueDialogueVRRawImage.GetComponent<Animator>().speed);
             }
@@ -393,7 +395,7 @@ namespace Tests
             //StopAllCoroutines();                    // Stop coroutine before starting new one.
 
             // 8
-            //StartCoroutine(TypeSentence(sentence, clip)); // Display or type one character at a time.
+            //StartCoroutine(TypeSentenceTest(sentence, clip)); // Display or type one character at a time.
 
             // 9
             dialogueNodeToPlay = dialogueNode;
@@ -401,12 +403,17 @@ namespace Tests
         }
 
         [UnityTest, Order(3)]
-        public IEnumerator TypeSentence()
+        public IEnumerator TypeSentenceTest()
         {
             isTypeSentenceCoroutineRunning = true;
+            Assert.IsTrue(isTypeSentenceCoroutineRunning);
 
             if (debugComponent)
+            {
+                Assert.IsTrue(debugComponent);
                 Debug.Log("isTypeSentenceCoroutineRunning: " + isTypeSentenceCoroutineRunning);
+                LogAssert.Expect(LogType.Log, "isTypeSentenceCoroutineRunning: " + isTypeSentenceCoroutineRunning);
+            }
 
             DialogueTree.DialogueNode dialogueNode = dialogueNodeToPlay;
             Assert.AreEqual(dialogueNodeToPlay, dialogueNode);
@@ -415,17 +422,30 @@ namespace Tests
             string nodeDialogueString = dialogueNode.nodeDialogueString;
             AudioClip nodeDialogueAudioClip = dialogueNode.nodeDialogueAudioClip;
 
+            Assert.AreEqual(dialogueNode.nodeCharacterName, nodeCharacterName);
+            Assert.AreEqual(dialogueNode.nodeDialogueString, nodeDialogueString);
+            Assert.AreEqual(dialogueNode.nodeDialogueAudioClip, nodeDialogueAudioClip);
+
             // Set nodeCharacterName text fields with the nodeCharacterName of the person talking in the dialogueTree
             nameText.text = nodeCharacterName;
             nameVRText.text = nodeCharacterName;
 
+            Assert.AreEqual(nodeCharacterName, nameText.text);
+            Assert.AreEqual(nodeCharacterName, nameVRText.text);
+
             if (requireContinueButton)
             {
+                Assert.IsTrue(requireContinueButton);
+
                 inputContinueDialogueImage.gameObject.SetActive(false);
                 inputContinueDialogueVRImage.gameObject.SetActive(false);
+
+                Assert.IsTrue(inputContinueDialogueImage.gameObject.activeSelf);
+                Assert.IsTrue(inputContinueDialogueVRImage.gameObject.activeSelf);
             }
 
             currentSentence = nodeDialogueString;
+            Assert.AreEqual(nodeDialogueString, currentSentence);
 
             audioSource.Stop();
             Assert.IsFalse(audioSource.isPlaying);
@@ -433,9 +453,13 @@ namespace Tests
             if (playWithAudio)
             {
                 Assert.IsTrue(playWithAudio);
+
                 if (nodeDialogueAudioClip)
                 {
+                    Assert.IsNotNull(nodeDialogueAudioClip);
+
                     audioSource.PlayOneShot(nodeDialogueAudioClip, volume);
+
                     Assert.IsTrue(audioSource.isPlaying);
                 }
                 else
@@ -483,24 +507,48 @@ namespace Tests
                 {
                     Assert.IsFalse(requireContinueButton);
 
-                    if(nodeDialogueAudioClip)
+                    if (nodeDialogueAudioClip)
+                    {
+                        Assert.IsNotNull(nodeDialogueAudioClip);
+
+#if UNITY_EDITOR
+                        yield return null;  // Used in edit mode only
+#else
                         yield return new WaitForSeconds(nodeDialogueAudioClip.length);
+#endif
+                    }
                     else
+                    {
+                        Assert.IsNull(nodeDialogueAudioClip);
+
+#if UNITY_EDITOR
+                        yield return null;  // Used in edit mode only
+#else
                         yield return new WaitForSeconds(fullSentenceDelay);
+#endif
+                    }
 
                     isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
+
+                    Assert.IsFalse(isTypeSentenceCoroutineRunning);
 
                     DisplayNextSentenceTest();
                 }
                 else
                 {
+                    Assert.IsTrue(requireContinueButton);
+
                     DisplayNextSentenceTest();
 
                     isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
+
+                    Assert.IsFalse(isTypeSentenceCoroutineRunning);
                 }
             }
             else
             {
+                Assert.IsFalse(instantPrintBegin);
+
                 dialogueText.text = "";
                 dialogueVRText.text = "";
                 Assert.AreEqual("", dialogueText.text);
@@ -520,12 +568,22 @@ namespace Tests
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
                     {
                         Assert.IsTrue(letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!');
+#if UNITY_EDITOR
+                        yield return null;  // Used in edit mode only
+#else
                         yield return new WaitForSeconds(currentSentenceDelay);      // Delay next nodeDialogueString
+#endif
+
                     }
                     else
                     {
                         Assert.IsFalse(letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!');
+#if UNITY_EDITOR
+                        yield return null;  // Used in edit mode only
+#else
                         yield return new WaitForSeconds(currentPrintLetterDelay);   // Delay character print
+#endif
+
                     }
                 }
 
@@ -533,39 +591,70 @@ namespace Tests
                 if (!requireContinueButton)
                 {
                     Assert.IsFalse(requireContinueButton);
+
                     // If last character is not any form of punctutation, then delay next sentence
                     if (!(nodeDialogueString.EndsWith(",") || nodeDialogueString.EndsWith(";") || nodeDialogueString.EndsWith(".") || nodeDialogueString.EndsWith("?") || nodeDialogueString.EndsWith("!")))
                     {
                         Assert.IsTrue(!(nodeDialogueString.EndsWith(",") || nodeDialogueString.EndsWith(";") || nodeDialogueString.EndsWith(".") || nodeDialogueString.EndsWith("?") || nodeDialogueString.EndsWith("!")));
+#if UNITY_EDITOR
+                        yield return null;  // Used in edit mode only
+#else
                         yield return new WaitForSeconds(currentSentenceDelay);
+#endif
                     }
 
+#if UNITY_EDITOR
+                    yield return null;  // Used in edit mode only
+#else
                     yield return new WaitUntil(() => !audioSource.isPlaying); // Wait until audioclip for the dialogue nodeDialogueString has stopped playing if it hasn't.
+#endif
+
+                    Assert.IsFalse(audioSource.isPlaying);
 
                     isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
+
+                    Assert.IsFalse(isTypeSentenceCoroutineRunning);
 
                     DisplayNextSentenceTest();
                 }
                 else
                 {
+                    Assert.IsTrue(requireContinueButton);
+
                     DisplayNextSentenceTest();
 
                     isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
+
+                    Assert.IsFalse(isTypeSentenceCoroutineRunning);
                 }
             }
 
             if (requireContinueButton)
             {
+                Assert.IsTrue(requireContinueButton);
+
                 inputContinueDialogueImage.gameObject.SetActive(true);
                 inputContinueDialogueVRImage.gameObject.SetActive(true);
+
+                Assert.IsTrue(inputContinueDialogueImage.gameObject.activeSelf);
+                Assert.IsTrue(inputContinueDialogueVRImage.gameObject.activeSelf);
 
                 // Update speed of animation with current settings
                 inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
                 inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+
+                Assert.AreEqual(inputContinueDialogueImageAnimationSpeed, inputContinueDialogueImage.GetComponent<Animator>().speed);
+                Assert.AreEqual(inputContinueDialogueImageAnimationSpeed, inputContinueDialogueVRImage.GetComponent<Animator>().speed);
             }
+            else
+                Assert.IsFalse(requireContinueButton);
 
             if (debugComponent)
+            {
+                Assert.IsTrue(debugComponent);
                 Debug.Log("isTypeSentenceCoroutineRunning: " + isTypeSentenceCoroutineRunning);
+                LogAssert.Expect(LogType.Log, "isTypeSentenceCoroutineRunning: " + isTypeSentenceCoroutineRunning);
+            }
         }
 
         [Test, Order(4)]
@@ -652,6 +741,16 @@ namespace Tests
             dialogueCanvasAnimatorVR = null;
             rtVR = null;
 
+            autoContinueDialogueRawImage = null;
+            autoContinueDialogueVRRawImage = null;
+            autoContinueDialogueImageAnimator = null;
+            autoContinueDialogueImageAnimatorVR = null;
+
+            inputContinueDialogueImage = null;
+            inputContinueDialogueVRImage = null;
+            inputContinueDialogueImageAnimator = null;
+            inputContinueDialogueImageAnimatorVR = null;
+
             Assert.IsNull(audioSource);
             Assert.IsNull(dialogueCanvas);
             Assert.IsNull(dialogueVRCanvas);
@@ -661,6 +760,14 @@ namespace Tests
             Assert.IsNull(rt);
             Assert.IsNull(dialogueCanvasAnimatorVR);
             Assert.IsNull(rtVR);
+            Assert.IsNull(autoContinueDialogueRawImage);
+            Assert.IsNull(autoContinueDialogueVRRawImage);
+            Assert.IsNull(autoContinueDialogueImageAnimator);
+            Assert.IsNull(autoContinueDialogueImageAnimatorVR);
+            Assert.IsNull(inputContinueDialogueImage);
+            Assert.IsNull(inputContinueDialogueVRImage);
+            Assert.IsNull(inputContinueDialogueImageAnimator);
+            Assert.IsNull(inputContinueDialogueImageAnimatorVR);
         }
     }
 }
