@@ -15,26 +15,42 @@ namespace Tests
         public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxCanvas
         public Text nameText;
         public Text dialogueText;
+        public RawImage autoContinueDialogueRawImage;
+        public Image inputContinueDialogueImage;
 
         // Dialogue VR Canvas Elements
         public GameObject dialogueVRCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxCanvas
         public Text nameVRText;
         public Text dialogueVRText;
+        public RawImage autoContinueDialogueVRRawImage;
+        public Image inputContinueDialogueVRImage;
 
         // Dialogue Print Settings
         public float textDisplayWidth = 800.0f;
         public float printLetterDelay = 0.1f;
-        public bool instantPrint = true;
+        public bool instantPrintBegin = true;
         public bool printDialogue = true;
+        private float currentPrintLetterDelay;
 
         // Dialogue Input Settings
         public bool requireContinueButton = false;
 
+        // Requires requireContinueButton to be true
+        public bool instantPrintFinish = true;  // Won't apply if instantPrintBegin is true
+        public bool speedPrintFinish = false;   // Won't apply if instantPrintFinish is true
+
         // Dialogue Delay Settings
         public float sentenceDelay = 1.0f;
+        private float currentSentenceDelay;
 
         // Dialogue Animation Settings
         public bool useOpenCloseAnimation = true;
+        public float inputContinueDialogueImageAnimationSpeed = 0.15f;
+        public float autoContinueDialogueImageAnimationSpeed = 2.0f;
+        public AudioClip openWithAnimation;
+        public AudioClip closeWithAnimation;
+        public AudioClip openWithoutAnimation;
+        public AudioClip closeWithoutAnimation;
 
         // Dialogue Audio Settings
         public float volume = 1.0f;
@@ -44,70 +60,81 @@ namespace Tests
         // Dialogue Test Settings
         public bool playAtStart = false;
         public DialogueTree dialogueTreeTest;
+        public bool useTestButtons = false;
+        public GameObject testButtons;
+        public GameObject testVRButtons;
 
         // Debug Settings
         public bool debugComponent = true;
 
         // Dialogue Queues
-        private Queue<string> sentences;
-        private Queue<AudioClip> sentenceAudioClips;
+        private Queue<DialogueTree.DialogueNode> dialogueNodes;
 
-        private Animator animator, animatorVR;
+        private bool isTypeSentenceCoroutineRunning = false;
+        private string currentSentence;
+
+        private Animator dialogueCanvasAnimator, dialogueCanvasAnimatorVR;
+        private Animator autoContinueDialogueImageAnimator, autoContinueDialogueImageAnimatorVR;
+        private Animator inputContinueDialogueImageAnimator, inputContinueDialogueImageAnimatorVR;
         private RectTransform rt, rtVR;
 
-        private string sentenceStringToPlay = "";
-        private AudioClip sentenceAudioClipToPlay;
+        private DialogueTree.DialogueNode dialogueNodeToPlay;
 
         [SetUp]
         public void Setup()
         {
-            GameObject audioSourceObject = new GameObject();    // Might need to make global.
-
-            audioSource = audioSourceObject.AddComponent<AudioSource>();
+            audioSource = new GameObject().AddComponent<AudioSource>();
             dialogueCanvas = new GameObject();
-            //dialogueCanvas = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/DialogueToolPackage/Prefabs/DialogueBoxCanvas.prefab").transform.GetChild(0).gameObject;
             dialogueVRCanvas = new GameObject();
-            //dialogueVRCanvas = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/DialogueToolPackage/Prefabs/DialogueBoxVRCanvas.prefab").transform.GetChild(0).gameObject;
             dialogueTreeTest = AssetDatabase.LoadAssetAtPath<DialogueTree>("Assets/DialogueToolPackage/DialogueTreeAssets/Introduction.asset");
-            sentences = new Queue<string>();
-            sentenceAudioClips = new Queue<AudioClip>();
+            dialogueNodes = new Queue<DialogueTree.DialogueNode>();
 
-            animator = dialogueCanvas.AddComponent<Animator>();
-            //animator = dialogueCanvas.GetComponent<Animator>();
+            dialogueCanvasAnimator = dialogueCanvas.AddComponent<Animator>();
             rt = dialogueCanvas.AddComponent<RectTransform>();
-            //rt = dialogueCanvas.GetComponent<RectTransform>();
 
-            animatorVR = dialogueVRCanvas.AddComponent<Animator>();
-            //animatorVR = dialogueVRCanvas.GetComponent<Animator>();
+            dialogueCanvasAnimatorVR = dialogueVRCanvas.AddComponent<Animator>();
             rtVR = dialogueVRCanvas.AddComponent<RectTransform>();
-            //rtVR = dialogueVRCanvas.GetComponent<RectTransform>();
 
             dialogueText = new GameObject().AddComponent<Text>();
-            //dialogueText = dialogueCanvas.transform.GetChild(1).GetComponent<Text>();
             dialogueVRText = new GameObject().AddComponent<Text>();
-            //dialogueVRText = dialogueVRCanvas.transform.GetChild(1).GetComponent<Text>();
+
+            autoContinueDialogueRawImage = new GameObject().AddComponent<RawImage>();
+            autoContinueDialogueVRRawImage = new GameObject().AddComponent<RawImage>();
+            autoContinueDialogueImageAnimator = autoContinueDialogueRawImage.gameObject.AddComponent<Animator>();
+            autoContinueDialogueImageAnimatorVR = autoContinueDialogueVRRawImage.gameObject.AddComponent<Animator>();
+
+            inputContinueDialogueImage = new GameObject().AddComponent<Image>();
+            inputContinueDialogueVRImage = new GameObject().AddComponent<Image>();
+            inputContinueDialogueImageAnimator = inputContinueDialogueImage.gameObject.AddComponent<Animator>();
+            inputContinueDialogueImageAnimatorVR = inputContinueDialogueVRImage.gameObject.AddComponent<Animator>();
 
             Assert.IsNotNull(audioSource);
             Assert.IsNotNull(dialogueCanvas);
             Assert.IsNotNull(dialogueVRCanvas);
             Assert.IsNotNull(dialogueTreeTest);
-            Assert.IsNotNull(sentences);
-            Assert.IsNotNull(sentenceAudioClips);
-            Assert.IsNotNull(animator);
+            Assert.IsNotNull(dialogueNodes);
+            Assert.IsNotNull(dialogueCanvasAnimator);
             Assert.IsNotNull(rt);
-            Assert.IsNotNull(animatorVR);
+            Assert.IsNotNull(dialogueCanvasAnimatorVR);
             Assert.IsNotNull(rtVR);
+            Assert.IsNotNull(autoContinueDialogueRawImage);
+            Assert.IsNotNull(autoContinueDialogueVRRawImage);
+            Assert.IsNotNull(inputContinueDialogueImage);
+            Assert.IsNotNull(inputContinueDialogueVRImage);
 
-            animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas/DialogueBoxCanvas.controller");
-            animatorVR.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas/DialogueBoxCanvas.controller");
+            dialogueCanvasAnimator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas/DialogueBoxCanvas.controller");
+            dialogueCanvasAnimatorVR.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/DialogueBoxCanvas/DialogueBoxCanvas.controller");
+            autoContinueDialogueImageAnimator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/ContinueDialogueImages/AutoContinueDialogueImage/AutoContinueDialogueImage.controller");
+            autoContinueDialogueImageAnimatorVR.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/ContinueDialogueImages/AutoContinueDialogueImage/AutoContinueDialogueImage.controller");
+            inputContinueDialogueImageAnimator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/ContinueDialogueImages/InputContinueDialogueImage/InputContinueDialogueImage.controller");
+            inputContinueDialogueImageAnimatorVR.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/DialogueToolPackage/Animations/ContinueDialogueImages/InputContinueDialogueImage/InputContinueDialogueImage.controller");
 
-            Assert.IsNotNull(animator.runtimeAnimatorController);
-            Assert.IsNotNull(animatorVR.runtimeAnimatorController);
-
-            // The dialogueTreeTest object can also be set with these methods
-            //dialogueTreeTest = Resources.Load<DialogueTree>("DialogueTreeAssets/Introduction");
-            //dialogueTreeTest = (DialogueTree)ScriptableObject.CreateInstance("DialogueTree");
-            //dialogueTreeTest.dialogueTreeElements.Add()
+            Assert.IsNotNull(dialogueCanvasAnimator.runtimeAnimatorController);
+            Assert.IsNotNull(dialogueCanvasAnimatorVR.runtimeAnimatorController);
+            Assert.IsNotNull(autoContinueDialogueImageAnimator.runtimeAnimatorController);
+            Assert.IsNotNull(autoContinueDialogueImageAnimatorVR.runtimeAnimatorController);
+            Assert.IsNotNull(inputContinueDialogueImageAnimator.runtimeAnimatorController);
+            Assert.IsNotNull(inputContinueDialogueImageAnimatorVR.runtimeAnimatorController);
         }
 
         [Test, Order(1)]
@@ -122,6 +149,19 @@ namespace Tests
                 return;
             }
 
+            if (!requireContinueButton)
+            {
+                Assert.IsTrue(!requireContinueButton);
+
+                autoContinueDialogueRawImage.gameObject.SetActive(true);
+                autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+                autoContinueDialogueVRRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+
+                Assert.IsTrue(autoContinueDialogueRawImage.gameObject.activeSelf);
+                Assert.AreEqual(autoContinueDialogueImageAnimationSpeed, autoContinueDialogueRawImage.GetComponent<Animator>().speed);
+                Assert.AreEqual(autoContinueDialogueImageAnimationSpeed, autoContinueDialogueVRRawImage.GetComponent<Animator>().speed);
+            }
+
             // 2
             if (printDialogue)
             {
@@ -132,21 +172,39 @@ namespace Tests
                 {
                     Assert.IsTrue(useOpenCloseAnimation);
 
-                    animator.enabled = true;
-                    animator.SetBool("canTransition", true);
-                    animator.SetBool("isOpen", true);
+                    if (dialogueCanvas.activeSelf)
+                    {
+                        Assert.IsTrue(dialogueCanvas.activeSelf);
 
-                    Assert.IsTrue(animator.enabled);
-                    Assert.IsTrue(animator.GetBool("canTransition"));
-                    Assert.IsTrue(animator.GetBool("isOpen"));
+                        dialogueCanvasAnimator.enabled = true;
+                        dialogueCanvasAnimator.SetBool("canTransition", true);
+                        dialogueCanvasAnimator.SetBool("isOpen", true);
 
-                    animatorVR.enabled = true;
-                    animatorVR.SetBool("canTransition", true);
-                    animatorVR.SetBool("isOpen", true);
+                        Assert.IsTrue(dialogueCanvasAnimator.enabled);
+                        Assert.IsTrue(dialogueCanvasAnimator.GetBool("canTransition"));
+                        Assert.IsTrue(dialogueCanvasAnimator.GetBool("isOpen"));
+                    }
+                    else if (dialogueVRCanvas.activeSelf)
+                    {
+                        Assert.IsTrue(dialogueVRCanvas.activeSelf);
 
-                    Assert.IsTrue(animatorVR.enabled);
-                    Assert.IsTrue(animatorVR.GetBool("canTransition"));
-                    Assert.IsTrue(animatorVR.GetBool("isOpen"));
+                        dialogueCanvasAnimatorVR.enabled = true;
+                        dialogueCanvasAnimatorVR.SetBool("canTransition", true);
+                        dialogueCanvasAnimatorVR.SetBool("isOpen", true);
+
+                        Assert.IsTrue(dialogueCanvasAnimatorVR.enabled);
+                        Assert.IsTrue(dialogueCanvasAnimatorVR.GetBool("canTransition"));
+                        Assert.IsTrue(dialogueCanvasAnimatorVR.GetBool("isOpen"));
+                    }
+
+                    if (openWithAnimation)
+                    {
+                        Assert.IsTrue(openWithAnimation);
+
+                        audioSource.PlayOneShot(openWithAnimation);
+
+                        Assert.IsTrue(audioSource.isPlaying);
+                    }
                 }
 
                 // 2b
@@ -154,18 +212,35 @@ namespace Tests
                 {
                     Assert.IsFalse(useOpenCloseAnimation);
 
-                    //dialogueCanvas.SetActive(true);
-                    animator.enabled = false;
-                    rt.localScale = new Vector3(1, 1, 1);
+                    if (dialogueCanvas.activeSelf)
+                    {
+                        Assert.IsTrue(dialogueCanvas.activeSelf);
 
-                    Assert.IsFalse(animator.enabled);
-                    Assert.AreEqual(new Vector3(1, 1, 1), rt.localScale);
+                        dialogueCanvasAnimator.enabled = false;
+                        rt.localScale = new Vector3(1, 1, 1);
 
-                    animatorVR.enabled = false;
-                    rtVR.localScale = new Vector3(1, 1, 1);
+                        Assert.IsFalse(dialogueCanvasAnimator.enabled);
+                        Assert.AreEqual(new Vector3(1, 1, 1), rt.localScale);
+                    }
+                    else if (dialogueVRCanvas.activeSelf)
+                    {
+                        Assert.IsTrue(dialogueVRCanvas.activeSelf);
 
-                    Assert.IsFalse(animatorVR.enabled);
-                    Assert.AreEqual(new Vector3(1, 1, 1), rtVR.localScale);
+                        dialogueCanvasAnimatorVR.enabled = false;
+                        rtVR.localScale = new Vector3(1, 1, 1);
+
+                        Assert.IsFalse(dialogueCanvasAnimatorVR.enabled);
+                        Assert.AreEqual(new Vector3(1, 1, 1), rtVR.localScale);
+                    }
+
+                    if (openWithoutAnimation)
+                    {
+                        Assert.IsTrue(openWithAnimation);
+
+                        audioSource.PlayOneShot(openWithAnimation);
+
+                        Assert.IsTrue(audioSource.isPlaying);
+                    }
                 }
             }
 
@@ -174,43 +249,27 @@ namespace Tests
             Assert.IsNotNull(nameTextObject);
 
             nameText = nameTextObject.AddComponent<Text>();
-            //nameText = dialogueCanvas.transform.GetChild(0).GetChild(0).GetComponent<Text>();
             Assert.IsNotNull(nameText);
             Assert.IsEmpty(nameText.text);
-            //Assert.IsNotEmpty(dialogueTreeTest.characterName);
-
-            //nameText.text = dialogueTreeTest.characterName;
-            //Assert.AreEqual(dialogueTreeTest.characterName, nameText.text);
 
             // 4
             GameObject nameVRTextObject = new GameObject();
             nameVRText = nameVRTextObject.AddComponent<Text>();
-            //nameVRText = dialogueVRCanvas.transform.GetChild(0).GetChild(0).GetComponent<Text>();
             Assert.IsNotNull(nameVRTextObject);
             Assert.IsNotNull(nameVRText);
 
-            //nameVRText.text = dialogueTreeTest.characterName;
-            //Assert.AreEqual(dialogueTreeTest.characterName, nameVRText.text);
-
             // 5
-            sentences.Clear();
-            Assert.AreEqual(0, sentences.Count);
+            dialogueNodes.Clear();
+            Assert.AreEqual(0, dialogueNodes.Count);
 
             // 6
-            //foreach (string sentence in dialogueTreeTest.dialogueTreeElements)
+            foreach (DialogueTree.DialogueNode node in dialogueTreeTest.dialogueNodeElements)
             {
-            //    sentences.Enqueue(sentence);
+                dialogueNodes.Enqueue(node);
             }
-            //Assert.AreEqual(dialogueTreeTest.dialogueTreeElements.Count, sentences.Count);
+            Assert.AreEqual(dialogueTreeTest.dialogueNodeElements.Count, dialogueNodes.Count);
 
             // 7
-            //foreach (AudioClip clip in dialogueTreeTest.dialogueTreeAudioClips)
-            {
-            //    sentenceAudioClips.Enqueue(clip);
-            }
-            //Assert.AreEqual(dialogueTreeTest.dialogueTreeAudioClips.Count, sentenceAudioClips.Count);
-
-            // 8
             DisplayNextSentenceTest();
         }
 
@@ -218,64 +277,155 @@ namespace Tests
         public void DisplayNextSentenceTest()
         {
             // 1
-            if (sentences.Count == 0)
+            // Check to see if current nodeDialogueString is typing first
+            if (isTypeSentenceCoroutineRunning)
             {
-                Assert.AreEqual(0, sentences.Count);
+                Assert.IsTrue(isTypeSentenceCoroutineRunning);
+
+                // 1a
+                // Only used if input is required
+                if (requireContinueButton)
+                {
+                    Assert.IsTrue(requireContinueButton);
+
+                    // 1aa
+                    // Instant print the rest of the current nodeDialogueString
+                    if (instantPrintFinish)
+                    {
+                        Assert.IsTrue(instantPrintFinish);
+
+                        //StopAllCoroutines();                    // Stop coroutine that is currently printing.
+
+                        dialogueText.text = currentSentence;
+                        dialogueVRText.text = currentSentence;
+
+                        Assert.AreEqual(currentSentence, dialogueText.text);
+                        Assert.AreEqual(currentSentence, dialogueVRText.text);
+
+                        isTypeSentenceCoroutineRunning = false; // Make sure this is false after nodeDialogueString is done typing.
+
+                        Assert.IsFalse(isTypeSentenceCoroutineRunning);
+                    }
+
+                    // 1ab
+                    else
+                    {
+                        Assert.IsFalse(instantPrintFinish);
+
+                        // 1aba
+                        // Change speed of the text without changing the value for the setting. Create private copy of the value.
+                        if (speedPrintFinish)
+                        {
+                            Assert.IsTrue(speedPrintFinish);
+
+                            // The fastest is actually one frame.
+                            currentPrintLetterDelay = 0.0f;
+                            currentSentenceDelay = 0.0f;
+
+                            Assert.AreEqual(0, currentPrintLetterDelay);
+                            Assert.AreEqual(0, currentSentenceDelay);
+                        }
+                    }
+
+                    // 1ac
+                    if (requireContinueButton)
+                    {
+                        Assert.IsTrue(requireContinueButton);
+
+                        inputContinueDialogueImage.gameObject.SetActive(true);
+                        inputContinueDialogueVRImage.gameObject.SetActive(true);
+
+                        // Update speed of animation with current settings
+                        inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                        inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+
+                        Assert.IsTrue(inputContinueDialogueImage.gameObject.activeSelf);
+                        Assert.IsTrue(inputContinueDialogueVRImage.gameObject.activeSelf);
+                        Assert.AreEqual(inputContinueDialogueImageAnimationSpeed, inputContinueDialogueImage.GetComponent<Animator>().speed);
+                        Assert.AreEqual(inputContinueDialogueImageAnimationSpeed, inputContinueDialogueVRImage.GetComponent<Animator>().speed);
+                    }
+                }
+
+                return;
+            }
+
+            Assert.IsFalse(isTypeSentenceCoroutineRunning);
+
+            // 2
+            // Reset delay times
+            currentPrintLetterDelay = printLetterDelay;
+            currentSentenceDelay = sentenceDelay;
+
+            Assert.AreEqual(printLetterDelay, currentPrintLetterDelay);
+            Assert.AreEqual(sentenceDelay, currentSentenceDelay);
+
+            // 3
+            if (dialogueNodes.Count == 0)
+            {
+                Assert.AreEqual(0, dialogueNodes.Count);
                 EndDialogue();
                 return;
             }
-            Assert.AreNotEqual(0, sentences.Count);
+            Assert.AreNotEqual(0, dialogueNodes.Count);
 
-            // 2
+            // 4
             dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueText.GetComponent<RectTransform>().sizeDelta.y);
             dialogueVRText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y);
             Assert.AreEqual(new Vector2(textDisplayWidth, dialogueText.GetComponent<RectTransform>().sizeDelta.y), dialogueText.GetComponent<RectTransform>().sizeDelta);
             Assert.AreEqual(new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y), dialogueVRText.GetComponent<RectTransform>().sizeDelta);
 
-            string sentence = sentences.Peek();
-            Assert.AreEqual(sentences.Peek(), sentence);
+            // 5
+            DialogueTree.DialogueNode dialogueNode = dialogueNodes.Peek();
+            int previousSentenceCount = dialogueNodes.Count;
+            dialogueNodes.Dequeue();
+            Assert.AreEqual(previousSentenceCount - 1, dialogueNodes.Count);
+            CollectionAssert.DoesNotContain(dialogueNodes, dialogueNode);
 
-            int previousSentenceCount = sentences.Count;
-            sentences.Dequeue();
-            Assert.AreEqual(previousSentenceCount - 1, sentences.Count);
-            CollectionAssert.DoesNotContain(sentences, sentence);
-
-            AudioClip clip = sentenceAudioClips.Peek();
-            Assert.AreEqual(sentenceAudioClips.Peek(), clip);
-
-            int previousSentenceAudioClipsCount = sentenceAudioClips.Count;
-            sentenceAudioClips.Dequeue();
-            Assert.AreEqual(sentenceAudioClips.Count, previousSentenceAudioClipsCount - 1);
-            CollectionAssert.DoesNotContain(sentenceAudioClips, clip);
-
-            // 3
+            // 6
             if (debugComponent)
             {
                 Assert.IsTrue(debugComponent);
-                Debug.Log(sentence);
-                LogAssert.Expect(LogType.Log, sentence);
+                Debug.Log(dialogueNode.nodeCharacterName + ": " + dialogueNode.nodeDialogueString);
+                LogAssert.Expect(LogType.Log, dialogueNode.nodeCharacterName + ": " + dialogueNode.nodeDialogueString);
             }
 
-            // 4
+            // 7
             //StopAllCoroutines();                    // Stop coroutine before starting new one.
 
-            // 5
+            // 8
             //StartCoroutine(TypeSentence(sentence, clip)); // Display or type one character at a time.
-            sentenceStringToPlay = sentence;
-            sentenceAudioClipToPlay = clip;
 
-            Assert.AreEqual(sentence, sentenceStringToPlay);
-            Assert.AreEqual(clip, sentenceAudioClipToPlay);
+            // 9
+            dialogueNodeToPlay = dialogueNode;
+            Assert.AreEqual(dialogueNode, dialogueNodeToPlay);
         }
 
         [UnityTest, Order(3)]
         public IEnumerator TypeSentence()
         {
-            string sentence = sentenceStringToPlay;     // FIXME: Value not reinitialized in DisplayNextSentenceTest.
-            AudioClip clip = sentenceAudioClipToPlay;   // FIXME: Value not reinitialized in DisplayNextSentenceTest.
+            isTypeSentenceCoroutineRunning = true;
 
-            Assert.AreEqual(sentenceStringToPlay, sentence);
-            Assert.AreEqual(sentenceAudioClipToPlay, clip);
+            if (debugComponent)
+                Debug.Log("isTypeSentenceCoroutineRunning: " + isTypeSentenceCoroutineRunning);
+
+            DialogueTree.DialogueNode dialogueNode = dialogueNodeToPlay;
+            Assert.AreEqual(dialogueNodeToPlay, dialogueNode);
+
+            string nodeCharacterName = dialogueNode.nodeCharacterName;
+            string nodeDialogueString = dialogueNode.nodeDialogueString;
+            AudioClip nodeDialogueAudioClip = dialogueNode.nodeDialogueAudioClip;
+
+            // Set nodeCharacterName text fields with the nodeCharacterName of the person talking in the dialogueTree
+            nameText.text = nodeCharacterName;
+            nameVRText.text = nodeCharacterName;
+
+            if (requireContinueButton)
+            {
+                inputContinueDialogueImage.gameObject.SetActive(false);
+                inputContinueDialogueVRImage.gameObject.SetActive(false);
+            }
+
+            currentSentence = nodeDialogueString;
 
             audioSource.Stop();
             Assert.IsFalse(audioSource.isPlaying);
@@ -283,9 +433,9 @@ namespace Tests
             if (playWithAudio)
             {
                 Assert.IsTrue(playWithAudio);
-                if (clip)
+                if (nodeDialogueAudioClip)
                 {
-                    audioSource.PlayOneShot(clip, volume);
+                    audioSource.PlayOneShot(nodeDialogueAudioClip, volume);
                     Assert.IsTrue(audioSource.isPlaying);
                 }
                 else
@@ -297,14 +447,14 @@ namespace Tests
             else
                 Assert.IsFalse(playWithAudio);
 
-            if (instantPrint)
+            if (instantPrintBegin)
             {
-                Assert.IsTrue(instantPrint);
+                Assert.IsTrue(instantPrintBegin);
 
                 int punctutationCount = 0;
                 Assert.AreEqual(0, punctutationCount);
 
-                foreach (char letter in sentence.ToCharArray())
+                foreach (char letter in nodeDialogueString.ToCharArray())
                 {
                     // If character is any form of punctutation, then delay next sentence. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
@@ -314,37 +464,49 @@ namespace Tests
                     }
                 }
 
-                dialogueText.text = sentence;         // Display full sentence instantly
-                dialogueVRText.text = sentence;         // Display full sentence instantly
-                Assert.AreEqual(sentence, dialogueText.text);
-                Assert.AreEqual(sentence, dialogueVRText.text);
+                dialogueText.text = nodeDialogueString;         // Display full sentence instantly
+                dialogueVRText.text = nodeDialogueString;         // Display full sentence instantly
+                Assert.AreEqual(nodeDialogueString, dialogueText.text);
+                Assert.AreEqual(nodeDialogueString, dialogueVRText.text);
 
-                float fullSentenceDelay = (printLetterDelay * sentence.Length) + (punctutationCount * sentenceDelay) + sentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * sentence delay time) + end of dialogueTreeElement delay time.
-                Assert.AreEqual((printLetterDelay * sentence.Length) + (punctutationCount * sentenceDelay) + sentenceDelay, fullSentenceDelay);
+                float fullSentenceDelay = (printLetterDelay * nodeDialogueString.Length) + (punctutationCount * sentenceDelay) + sentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * sentence delay time) + end of dialogueTreeElement delay time.
+                Assert.AreEqual((printLetterDelay * nodeDialogueString.Length) + (punctutationCount * sentenceDelay) + sentenceDelay, fullSentenceDelay);
 
                 if (debugComponent)
                 {
                     Assert.IsTrue(debugComponent);
-                    Debug.Log("fullSentenceDelay: " + fullSentenceDelay);
-                    LogAssert.Expect(LogType.Log, "fullSentenceDelay: " + fullSentenceDelay);
+                    Debug.Log("fullSentenceDelay: " + fullSentenceDelay + ", nodeDialogueAudioClip.length: " + nodeDialogueAudioClip.length);
+                    LogAssert.Expect(LogType.Log, "fullSentenceDelay: " + fullSentenceDelay + ", nodeDialogueAudioClip.length: " + nodeDialogueAudioClip.length);
                 }
 
                 if (!requireContinueButton)
                 {
                     Assert.IsFalse(requireContinueButton);
-                    //yield return new WaitForSeconds(fullSentenceDelay);
-                    yield return null;
-                    //DisplayNextSentenceTest();
+
+                    if(nodeDialogueAudioClip)
+                        yield return new WaitForSeconds(nodeDialogueAudioClip.length);
+                    else
+                        yield return new WaitForSeconds(fullSentenceDelay);
+
+                    isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
+
+                    DisplayNextSentenceTest();
+                }
+                else
+                {
+                    DisplayNextSentenceTest();
+
+                    isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
                 }
             }
             else
             {
                 dialogueText.text = "";
                 dialogueVRText.text = "";
-                Assert.AreEqual(sentence, dialogueText.text);
-                Assert.AreEqual(sentence, dialogueVRText.text);
+                Assert.AreEqual("", dialogueText.text);
+                Assert.AreEqual("", dialogueVRText.text);
 
-                foreach (char letter in sentence.ToCharArray())
+                foreach (char letter in nodeDialogueString.ToCharArray())
                 {
                     string previousDialogueTextValue = dialogueText.text;
                     string previousDialogueVRTextValue = dialogueVRText.text;
@@ -358,14 +520,12 @@ namespace Tests
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
                     {
                         Assert.IsTrue(letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!');
-                        //yield return new WaitForSeconds(sentenceDelay);
-                        yield return null; // Wait a single frame/tick
+                        yield return new WaitForSeconds(currentSentenceDelay);      // Delay next nodeDialogueString
                     }
                     else
                     {
                         Assert.IsFalse(letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!');
-                        yield return null; // Wait a single frame/tick
-                        //yield return new WaitForSeconds(printLetterDelay);
+                        yield return new WaitForSeconds(currentPrintLetterDelay);   // Delay character print
                     }
                 }
 
@@ -374,16 +534,38 @@ namespace Tests
                 {
                     Assert.IsFalse(requireContinueButton);
                     // If last character is not any form of punctutation, then delay next sentence
-                    if (!(sentence.EndsWith(",") || sentence.EndsWith(";") || sentence.EndsWith(".") || sentence.EndsWith("?") || sentence.EndsWith("!")))
+                    if (!(nodeDialogueString.EndsWith(",") || nodeDialogueString.EndsWith(";") || nodeDialogueString.EndsWith(".") || nodeDialogueString.EndsWith("?") || nodeDialogueString.EndsWith("!")))
                     {
-                        Assert.IsTrue(!(sentence.EndsWith(",") || sentence.EndsWith(";") || sentence.EndsWith(".") || sentence.EndsWith("?") || sentence.EndsWith("!")));
-                        //yield return new WaitForSeconds(sentenceDelay);
-                        yield return null; // Wait a single frame/tick
+                        Assert.IsTrue(!(nodeDialogueString.EndsWith(",") || nodeDialogueString.EndsWith(";") || nodeDialogueString.EndsWith(".") || nodeDialogueString.EndsWith("?") || nodeDialogueString.EndsWith("!")));
+                        yield return new WaitForSeconds(currentSentenceDelay);
                     }
+
+                    yield return new WaitUntil(() => !audioSource.isPlaying); // Wait until audioclip for the dialogue nodeDialogueString has stopped playing if it hasn't.
+
+                    isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
 
                     DisplayNextSentenceTest();
                 }
+                else
+                {
+                    DisplayNextSentenceTest();
+
+                    isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
+                }
             }
+
+            if (requireContinueButton)
+            {
+                inputContinueDialogueImage.gameObject.SetActive(true);
+                inputContinueDialogueVRImage.gameObject.SetActive(true);
+
+                // Update speed of animation with current settings
+                inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+            }
+
+            if (debugComponent)
+                Debug.Log("isTypeSentenceCoroutineRunning: " + isTypeSentenceCoroutineRunning);
         }
 
         [Test, Order(4)]
@@ -406,11 +588,25 @@ namespace Tests
             {
                 Assert.IsTrue(useOpenCloseAnimation);
 
-                animator.SetBool("isOpen", false);
-                animatorVR.SetBool("isOpen", false);
+                if (dialogueCanvas.activeSelf)
+                {
+                    dialogueCanvasAnimator.SetBool("isOpen", false);
+                    Assert.IsFalse(dialogueCanvasAnimator.GetBool("isOpen"));
+                }
+                else if (dialogueVRCanvas.activeSelf)
+                {
+                    dialogueCanvasAnimatorVR.SetBool("isOpen", false);
+                    Assert.IsFalse(dialogueCanvasAnimatorVR.GetBool("isOpen"));
+                }
 
-                Assert.IsFalse(animator.GetBool("isOpen"));
-                Assert.IsFalse(animatorVR.GetBool("isOpen"));
+                if (closeWithAnimation)
+                {
+                    Assert.IsTrue(closeWithAnimation);
+
+                    audioSource.PlayOneShot(closeWithAnimation);
+
+                    Assert.IsTrue(audioSource.isPlaying);
+                }
             }
             else
             {
@@ -421,7 +617,26 @@ namespace Tests
 
                 Assert.AreEqual(new Vector3(1, 0, 1), rt.localScale);
                 Assert.AreEqual(new Vector3(1, 0, 1), rtVR.localScale);
+
+                if (closeWithoutAnimation)
+                {
+                    Assert.IsTrue(closeWithoutAnimation);
+
+                    audioSource.PlayOneShot(closeWithAnimation);
+
+                    Assert.IsTrue(audioSource.isPlaying);
+                }
             }
+
+            inputContinueDialogueImage.gameObject.SetActive(false);
+            inputContinueDialogueVRImage.gameObject.SetActive(false);
+            autoContinueDialogueRawImage.gameObject.SetActive(false);
+            autoContinueDialogueVRRawImage.gameObject.SetActive(false);
+
+            Assert.IsFalse(inputContinueDialogueImage.gameObject.activeSelf);
+            Assert.IsFalse(inputContinueDialogueVRImage.gameObject.activeSelf);
+            Assert.IsFalse(autoContinueDialogueRawImage.gameObject.activeSelf);
+            Assert.IsFalse(autoContinueDialogueVRRawImage.gameObject.activeSelf);
         }
 
         [TearDown]
@@ -431,22 +646,20 @@ namespace Tests
             dialogueCanvas = null;
             dialogueVRCanvas = null;
             dialogueTreeTest = null;
-            sentences = null;
-            sentenceAudioClips = null;
-            animator = null;
+            dialogueNodes = null;
+            dialogueCanvasAnimator = null;
             rt = null;
-            animatorVR = null;
+            dialogueCanvasAnimatorVR = null;
             rtVR = null;
 
             Assert.IsNull(audioSource);
             Assert.IsNull(dialogueCanvas);
             Assert.IsNull(dialogueVRCanvas);
             Assert.IsNull(dialogueTreeTest);
-            Assert.IsNull(sentences);
-            Assert.IsNull(sentenceAudioClips);
-            Assert.IsNull(animator);
+            Assert.IsNull(dialogueNodes);
+            Assert.IsNull(dialogueCanvasAnimator);
             Assert.IsNull(rt);
-            Assert.IsNull(animatorVR);
+            Assert.IsNull(dialogueCanvasAnimatorVR);
             Assert.IsNull(rtVR);
         }
     }

@@ -198,7 +198,6 @@ namespace DialogueSystem
         /// </summary>
         public void DisplayNextSentence()
         {
-
             // Check to see if current nodeDialogueString is typing first
             if (isTypeSentenceCoroutineRunning)
             {
@@ -226,17 +225,13 @@ namespace DialogueSystem
                         }
                     }
 
-                    if (requireContinueButton)
-                    {
-                        inputContinueDialogueImage.gameObject.SetActive(true);
-                        inputContinueDialogueVRImage.gameObject.SetActive(true);
+                    inputContinueDialogueImage.gameObject.SetActive(true);
+                    inputContinueDialogueVRImage.gameObject.SetActive(true);
 
-                        // Update speed of animation with current settings
-                        inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
-                        inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
-                    }
+                    // Update speed of animation with current settings
+                    inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                    inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
                 }
-
                 return;
             }
 
@@ -256,18 +251,16 @@ namespace DialogueSystem
             dialogueVRText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y);
 
             // Save nodeDialogueString and audioclip that is being dequeued
-            string nodeCharacterName = dialogueNodes.Peek().nodeCharacterName;
-            string nodeDialogueString = dialogueNodes.Peek().nodeDialogueString;
-            AudioClip nodeDialogueAudioClip = dialogueNodes.Peek().nodeDialogueAudioClip;
+            DialogueTree.DialogueNode dialogueNode = dialogueNodes.Peek();
 
             // Dequeue the current node so your not stuck on it for next call.
             dialogueNodes.Dequeue();
 
             if (debugComponent)
-                Debug.Log(nodeCharacterName + ": " + nodeDialogueString);
+                Debug.Log(dialogueNode.nodeCharacterName + ": " + dialogueNode.nodeDialogueString);
 
             StopAllCoroutines();                            // Stop coroutine before starting new one.
-            StartCoroutine(TypeNodeDialogueString(nodeCharacterName, nodeDialogueString, nodeDialogueAudioClip));   // Display or type one character at a time.
+            StartCoroutine(TypeNodeDialogueString(dialogueNode));   // Display or type one character at a time.
         }
 
         /// <summary>
@@ -276,9 +269,16 @@ namespace DialogueSystem
         /// <param nodeCharacterName="nodeDialogueString">The current nodeDialogueString that is out of the queue.</param>
         /// <param nodeCharacterName="nodeDialogueAudioClip">The current audioclip that is out of the queue.</param>
         /// <returns></returns>
-        private IEnumerator TypeNodeDialogueString(string nodeCharacterName, string nodeDialogueString, AudioClip nodeDialogueAudioClip)
+        private IEnumerator TypeNodeDialogueString(DialogueTree.DialogueNode dialogueNode)
         {
             isTypeSentenceCoroutineRunning = true;
+
+            if (debugComponent)
+                Debug.Log("isTypeSentenceCoroutineRunning: " + isTypeSentenceCoroutineRunning);
+
+            string nodeCharacterName = dialogueNode.nodeCharacterName;
+            string nodeDialogueString = dialogueNode.nodeDialogueString;
+            AudioClip nodeDialogueAudioClip = dialogueNode.nodeDialogueAudioClip;
 
             // Set nodeCharacterName text fields with the nodeCharacterName of the person talking in the dialogueTree
             nameText.text = nodeCharacterName;
@@ -322,10 +322,7 @@ namespace DialogueSystem
                 float fullSentenceDelay = (currentPrintLetterDelay * nodeDialogueString.Length) + (punctutationCount * currentSentenceDelay) + currentSentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * nodeDialogueString delay time) + end of dialogueTreeElement delay time.
 
                 if (debugComponent)
-                {
-                    Debug.Log("fullSentenceDelay: " + fullSentenceDelay);
-                    Debug.Log("nodeDialogueAudioClip.length: " + nodeDialogueAudioClip.length);
-                }
+                    Debug.Log("fullSentenceDelay: " + fullSentenceDelay + ", nodeDialogueAudioClip.length: " + nodeDialogueAudioClip.length);
 
                 // Play next nodeDialogueString without button input
                 if (!requireContinueButton)
@@ -335,9 +332,15 @@ namespace DialogueSystem
                     else
                         yield return new WaitForSeconds(fullSentenceDelay);
 
-                    isTypeSentenceCoroutineRunning = false;
-                    
+                    isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
+
                     DisplayNextSentence();
+                }
+                else
+                {
+                    DisplayNextSentence();
+
+                    isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
                 }
             }
             else
@@ -368,9 +371,15 @@ namespace DialogueSystem
 
                     yield return new WaitUntil(() => !audioSource.isPlaying); // Wait until audioclip for the dialogue nodeDialogueString has stopped playing if it hasn't.
 
-                    isTypeSentenceCoroutineRunning = false;
+                    isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
 
                     DisplayNextSentence();
+                }
+                else
+                {
+                    DisplayNextSentence();
+
+                    isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
                 }
             }
 
@@ -384,7 +393,8 @@ namespace DialogueSystem
                 inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
             }
 
-            isTypeSentenceCoroutineRunning = false; // This ensures that you can check if the coroutine is done.
+            if (debugComponent)
+                Debug.Log("isTypeSentenceCoroutineRunning: " + isTypeSentenceCoroutineRunning);
         }
 
         /// <summary>
@@ -421,7 +431,9 @@ namespace DialogueSystem
             }
 
             inputContinueDialogueImage.gameObject.SetActive(false);
+            inputContinueDialogueVRImage.gameObject.SetActive(false);
             autoContinueDialogueRawImage.gameObject.SetActive(false);
+            autoContinueDialogueVRRawImage.gameObject.SetActive(false);
         }
     }
 }
