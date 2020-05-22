@@ -5,7 +5,7 @@
       "app_key": "application.generated.unity.dialoguetooltest.exe",
       "launch_type": "url",
       "url": "steam://launch/",
-      "action_manifest_path": "C:\\Users\\ATI-Admin\\Desktop\\Unity Projects\\DialogueToolTest\\Assets\\StreamingAssets\\SteamVR\\actions.json",
+      "action_manifest_path": "C:\\Users\\Ryan\\Desktop\\Unity Projects\\Personal\\DialogueToolTest\\Assets\\StreamingAssets\\SteamVR\\actions.json",
       "strings": {
         "en_us": {
           "name": "DialogueToolTest [Testing]"

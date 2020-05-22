@@ -18,6 +18,7 @@ namespace DialogueSystem
         public Text dialogueText;
         public RawImage autoContinueDialogueRawImage;
         public Image inputContinueDialogueImage;
+        public GameObject multipleChoiceTemplate;
 
         [Header("Dialogue VR Canvas Elements:")]
         public GameObject dialogueVRCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxVRCanvas
@@ -69,8 +70,13 @@ namespace DialogueSystem
         public bool debugComponent = false;
 
         // Dialogue Queues
-        private Queue<DialogueTree.DialogueNode> dialogueNodes; 
+        private Queue<DialogueTree.DialogueNode> dialogueNodes;
 
+        // Current DialogueTree
+        private DialogueTree currentDialogueTree;
+        
+        // Dialogue Play State Checking
+        public bool IsDialoguePlaying { get; private set; }
         private bool isTypeSentenceCoroutineRunning = false;
         private string currentSentence;
 
@@ -123,11 +129,41 @@ namespace DialogueSystem
         }
 
         /// <summary>
+        /// A method to set the dialogue manager to only display text and play no sound.
+        /// </summary>
+        public void SetForOnlyText()
+        {
+            printDialogue = true;
+            volume = 0.0f;
+        }
+
+        /// <summary>
+        /// A method to set the dialogue manager to only play sound for dialogue and display no text for it.
+        /// </summary>
+        public void SetForOnlyVoice()
+        {
+            printDialogue = false;
+            volume = 1.0f;
+        }
+
+        /// <summary>
+        /// A method to set the dialogue manager to display text and play sound for dialogue.
+        /// </summary>
+        public void SetForVoiceAndText()
+        {
+            printDialogue = true;
+            volume = 1.0f;
+        }
+
+        /// <summary>
         /// A method to initiate the dialogueTree into a displayable UI.
         /// </summary>
         /// <param nodeCharacterName="dialogueTree">The scriptable object that will be used to extract string and audioclip data for dialogue.</param>
         public void StartDialogue(DialogueTree dialogueTree)
         {
+            // Set this to show that the current state of the Dialogue is being played if checking outside of the DialogueManager.
+            IsDialoguePlaying = true;
+
             if (!printDialogue && !playWithAudio)
             {
                 Debug.LogError("Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
@@ -148,13 +184,13 @@ namespace DialogueSystem
                 // Open Dialogue Box with animation or setting local scale
                 if (useOpenCloseAnimation)
                 {
-                    if (dialogueCanvas.activeSelf)
+                    if (dialogueCanvas.transform.parent.gameObject.activeSelf)
                     {
                         dialogueCanvas.GetComponent<Animator>().enabled = true;
                         dialogueCanvas.GetComponent<Animator>().SetBool("canTransition", true);
                         dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", true);
                     }
-                    else if (dialogueVRCanvas.activeSelf)
+                    else if (dialogueVRCanvas.transform.parent.gameObject.activeSelf)
                     {
                         dialogueVRCanvas.GetComponent<Animator>().enabled = true;
                         dialogueVRCanvas.GetComponent<Animator>().SetBool("canTransition", true);
@@ -166,12 +202,12 @@ namespace DialogueSystem
                 }
                 else
                 {
-                    if (dialogueCanvas.activeSelf)
+                    if (dialogueCanvas.transform.parent.gameObject.activeSelf)
                     {
                         dialogueCanvas.GetComponent<Animator>().enabled = false;
                         dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
                     }
-                    else if (dialogueVRCanvas.activeSelf)
+                    else if (dialogueVRCanvas.transform.parent.gameObject.activeSelf)
                     {
                         dialogueVRCanvas.GetComponent<Animator>().enabled = false;
                         dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
@@ -184,6 +220,9 @@ namespace DialogueSystem
 
             // Clear queue for new dialogue to be used.
             dialogueNodes.Clear();
+
+            // Get the currentDialogueTree if any
+            currentDialogueTree = dialogueTree;
 
             foreach (DialogueTree.DialogueNode node in dialogueTree.dialogueNodeElements)
             {
@@ -243,6 +282,15 @@ namespace DialogueSystem
             // End dialogue if queues are empty
             if (dialogueNodes.Count == 0)
             {
+                // If DialogueTree has multipleChoiceNode with at least two answers, then
+                if (currentDialogueTree.multipleChoiceNode.answers.Count >= 2)
+                {
+                    // Display MutltipleChoiceCanvas
+                    multipleChoiceTemplate.SetActive(true);
+                    return;
+                }
+
+                // If DialogueTree has another DialogueTree attached, then play that DialogueTree in EndDialogue()
                 EndDialogue();
                 return;
             }
@@ -253,7 +301,7 @@ namespace DialogueSystem
 
             // Save nodeDialogueString and audioclip that is being dequeued
             DialogueTree.DialogueNode dialogueNode = dialogueNodes.Peek();
-
+            
             // Dequeue the current node so your not stuck on it for next call.
             dialogueNodes.Dequeue();
 
@@ -406,15 +454,22 @@ namespace DialogueSystem
             // Stop audio
             audioSource.Stop();
 
+            // If the nextDialogueTree is attached to the current one, then play it.
+            if (currentDialogueTree.nextDialogueTree)
+            {
+                StartDialogue(currentDialogueTree.nextDialogueTree);
+                return;
+            }
+
             if (debugComponent)
                 Debug.Log("End of conversation.");
 
             // Close the dialogue box with animation or local scale change.
             if (useOpenCloseAnimation)
             {
-                if (dialogueCanvas.activeSelf)
+                if (dialogueCanvas.transform.parent.gameObject.activeSelf)
                     dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
-                else if (dialogueVRCanvas.activeSelf)
+                else if (dialogueVRCanvas.transform.parent.gameObject.activeSelf)
                     dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
 
                 if (closeWithAnimation)
@@ -422,9 +477,9 @@ namespace DialogueSystem
             }
             else
             {
-                if (dialogueCanvas.activeSelf)
+                if (dialogueCanvas.transform.parent.gameObject.activeSelf)
                     dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
-                else if (dialogueVRCanvas.activeSelf)
+                else if (dialogueVRCanvas.transform.parent.gameObject.activeSelf)
                     dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
 
                 if (closeWithoutAnimation)
@@ -435,6 +490,9 @@ namespace DialogueSystem
             inputContinueDialogueVRImage.gameObject.SetActive(false);
             autoContinueDialogueRawImage.gameObject.SetActive(false);
             autoContinueDialogueVRRawImage.gameObject.SetActive(false);
+
+            // Set this to show that the current state of the Dialogue is being played if checking outside of the DialogueManager.
+            IsDialoguePlaying = false;
         }
     }
 }

@@ -25,3 +25,17 @@ MonoBehaviour:
     nodeDialogueString: Something cool...
     nodeDialogueAudioClip: {fileID: 8300000, guid: 2b4914a75fbf282429328f3c291fd8d3,
       type: 3}
+  - nodeCharacterName: Ryan
+    nodeDialogueString: What do you think of that?
+    nodeDialogueAudioClip: {fileID: 8300000, guid: 2b4914a75fbf282429328f3c291fd8d3,
+      type: 3}
+  multipleChoiceNode:
+    question: What do you think of that?
+    answers:
+    - answer: Very interested!
+      dialogueTreeResponse: {fileID: 11400000, guid: e3d45babe339afa4aa32fc9eda735809,
+        type: 2}
+    - answer: Not interested!
+      dialogueTreeResponse: {fileID: 11400000, guid: 771e4b8984e529a409803982254d28ca,
+        type: 2}
+  nextDialogueTree: {fileID: 0}

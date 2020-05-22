@@ -10,10 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 36ba719a377cb7e4abbbe0414ab26baa, type: 3}
-  m_Name: AI_Response
+  m_Name: Introduction_Response_B
   m_EditorClassIdentifier: 
   dialogueNodeElements:
-  - nodeCharacterName: Patient
-    nodeDialogueString: Yeah, I was struggling to breathe, and my chest was tight,
-      I was using my inhaler alot.
+  - nodeCharacterName: Ryan
+    nodeDialogueString: Awe! That's too bad...
     nodeDialogueAudioClip: {fileID: 0}
+  multipleChoiceNode:
+    question: 
+    answers: []
+  nextDialogueTree: {fileID: 0}

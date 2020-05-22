@@ -8,6 +8,8 @@ namespace DialogueSystem
     public class DialogueTree : ScriptableObject
     {
         public List<DialogueNode> dialogueNodeElements = new List<DialogueNode>();
+        public MultipleChoiceNode multipleChoiceNode = new MultipleChoiceNode();
+        public DialogueTree nextDialogueTree;
 
         [System.Serializable]
         public struct DialogueNode
@@ -18,6 +20,24 @@ namespace DialogueSystem
             public string nodeDialogueString;
 
             public AudioClip nodeDialogueAudioClip;
+        }
+
+        [System.Serializable]
+        public struct MultipleChoiceNode
+        {
+            [TextArea(10, 15)]
+            public string question;
+
+            public List<MultipleChoiceAnswer> answers;
+        }
+
+        [System.Serializable]
+        public struct MultipleChoiceAnswer
+        {
+            [TextArea(10, 15)]
+            public string answer;
+
+            public DialogueTree dialogueTreeResponse;
         }
     }
 }
