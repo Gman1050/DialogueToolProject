@@ -1085,6 +1085,16 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 475240728}
+    - target: {fileID: 4771517079559893493, guid: 1f93e2744dac24e48bb2b00769d72f34,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6371547376825133668, guid: 1f93e2744dac24e48bb2b00769d72f34,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7611878297578410964, guid: 1f93e2744dac24e48bb2b00769d72f34,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
