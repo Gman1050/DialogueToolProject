@@ -26,6 +26,7 @@ namespace DialogueSystem
         public Text dialogueVRText;
         public RawImage autoContinueDialogueVRRawImage;
         public Image inputContinueDialogueVRImage;
+        public GameObject multipleChoiceVRTemplate;
 
         [Header("Dialogue Print Settings:")]
         [Range(650, 1800)] public float textDisplayWidth = 800.0f;
@@ -293,7 +294,12 @@ namespace DialogueSystem
                     autoContinueDialogueRawImage.gameObject.SetActive(false);
                     autoContinueDialogueVRRawImage.gameObject.SetActive(false);
 
-                    multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
+                    if (multipleChoiceTemplate.transform.parent.parent.gameObject.activeSelf)
+                        multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
+
+                    if (multipleChoiceVRTemplate.transform.parent.parent.gameObject.activeSelf)
+                        multipleChoiceVRTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
+
                     return;
                 }
 

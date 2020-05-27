@@ -43,13 +43,11 @@ namespace DialogueSystem
             {
                 // Instantiate and set position
                 Button answerButtonClone = Instantiate(answerButtonPrefab, answerButtonPrefab.transform.position, Quaternion.identity, transform);
-                //answerButtonClone.transform.SetParent(transform);
                 answerButtonClone.GetComponent<RectTransform>().anchoredPosition = newPosition;
                 Debug.Log(answerButtonClone.GetComponent<RectTransform>().position);
 
                 // Set Properties (answer text, onClick functionalities, etc.)
                 answerButtonClone.GetComponent<MultipleChoiceAnswer>().SetAnswerData(i, currentMultipleChoiceNode.answers[i].answer);
-                //answerButtonClone.onClick.AddListener(delegate{ SetChoice(answerButtonClone); });
 
                 // Set next position
                 float newPositionY = newPosition.y;
@@ -64,6 +62,7 @@ namespace DialogueSystem
         /// </summary>
         public void SubmitChoice()
         {
+            // If a choice has not been made yet, then don't continue.
             if (currentChoice == "")
                 return;
 
@@ -80,11 +79,11 @@ namespace DialogueSystem
             // Delete answerButtonClones generated in SetTemplate method
             foreach (Transform child in transform)
             {
-                if (child.GetComponent<Button>())
-                    Destroy(gameObject);
+                if (child.GetComponent<MultipleChoiceAnswer>())
+                    Destroy(child.gameObject);
             }
 
-            // Deactivate MultipleChoiceTemplate gameobject
+            // Clear all visible fields in MultipleChoiceTemplate
             questionText.text = "";
             currentChoice = "";
 

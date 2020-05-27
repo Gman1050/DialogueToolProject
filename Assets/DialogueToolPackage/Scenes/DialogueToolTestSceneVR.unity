@@ -1010,11 +1010,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 369037241025078823, guid: 1f93e2744dac24e48bb2b00769d72f34,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 1913698826}
     - target: {fileID: 2198653673865033863, guid: 1f93e2744dac24e48bb2b00769d72f34,
         type: 3}
       propertyPath: m_Name
@@ -1085,6 +1080,21 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 475240728}
+    - target: {fileID: 5727564241710799295, guid: 1f93e2744dac24e48bb2b00769d72f34,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6313291676155406175, guid: 1f93e2744dac24e48bb2b00769d72f34,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6545667051139813141, guid: 1f93e2744dac24e48bb2b00769d72f34,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7611878297578410964, guid: 1f93e2744dac24e48bb2b00769d72f34,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -1095,5 +1105,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1913698826}
+    - target: {fileID: 8447406664021438200, guid: 1f93e2744dac24e48bb2b00769d72f34,
+        type: 3}
+      propertyPath: m_Text
+      value: gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1f93e2744dac24e48bb2b00769d72f34, type: 3}
