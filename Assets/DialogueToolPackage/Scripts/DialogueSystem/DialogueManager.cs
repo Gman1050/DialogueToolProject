@@ -286,7 +286,14 @@ namespace DialogueSystem
                 if (currentDialogueTree.multipleChoiceNode.answers.Count >= 2)
                 {
                     // Display MutltipleChoiceCanvas
-                    multipleChoiceTemplate.SetActive(true);
+                    dialogueText.text = "";
+
+                    inputContinueDialogueImage.gameObject.SetActive(false);
+                    inputContinueDialogueVRImage.gameObject.SetActive(false);
+                    autoContinueDialogueRawImage.gameObject.SetActive(false);
+                    autoContinueDialogueVRRawImage.gameObject.SetActive(false);
+
+                    multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
                     return;
                 }
 

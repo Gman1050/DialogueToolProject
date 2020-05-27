@@ -7,23 +7,28 @@ namespace DialogueSystem
 {
     public class MultipleChoiceTemplate : MonoBehaviour
     {
+        [Header("Template UI Elements:")]
         public Text questionText;
         public Button answerButtonPrefab;
+        public Button submitButton;
 
-        private string currentChoice;
+        private string currentChoice = "";
         private DialogueTree.MultipleChoiceNode currentMultipleChoiceNode;
 
-        // Start is called before the first frame update
+        /// <summary>
+        /// Start is called before the first frame update
+        /// </summary>
         void Start()
         {
-
+            questionText.text = "";
+            submitButton.gameObject.SetActive(false);
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
+        /// <summary>
+        /// A method to set the value of currentChoice as the set parameter from MultipleChoiceAnswer gameobject.
+        /// </summary>
+        /// <param name="choice">The string to be set as the current choice of the multiple choice question.</param>
+        public void SetCurrentChoice(string choice) { currentChoice = choice; }
 
         /// <summary>
         /// A method that will set the layout of the particular multiple choice question.
@@ -31,47 +36,45 @@ namespace DialogueSystem
         public void SetTemplate(DialogueTree.MultipleChoiceNode multipleChoiceNode)
         {
             currentMultipleChoiceNode = multipleChoiceNode;
+            questionText.text = multipleChoiceNode.question;
+            Vector3 newPosition = answerButtonPrefab.transform.position;
 
-            // Instantiate
-            Button answerButtonClone = Instantiate(answerButtonPrefab, transform.position, Quaternion.identity);
+            for (int i = 0; i < currentMultipleChoiceNode.answers.Count; i++)
+            {
+                // Instantiate and set position
+                Button answerButtonClone = Instantiate(answerButtonPrefab, answerButtonPrefab.transform.position, Quaternion.identity, transform);
+                //answerButtonClone.transform.SetParent(transform);
+                answerButtonClone.GetComponent<RectTransform>().anchoredPosition = newPosition;
+                Debug.Log(answerButtonClone.GetComponent<RectTransform>().position);
 
-            // Set Position
+                // Set Properties (answer text, onClick functionalities, etc.)
+                answerButtonClone.GetComponent<MultipleChoiceAnswer>().SetAnswerData(i, currentMultipleChoiceNode.answers[i].answer);
+                //answerButtonClone.onClick.AddListener(delegate{ SetChoice(answerButtonClone); });
 
-            // Set Properties (answer text, onClick functionalities, etc.)
-            answerButtonClone.onClick.AddListener(() => SetChoice(answerButtonClone));
+                // Set next position
+                float newPositionY = newPosition.y;
+                newPosition = new Vector3(0, newPositionY - 85, 0);
+            }
+
+            submitButton.gameObject.SetActive(true);
         }
 
         /// <summary>
-        /// A method that sets the data for the selected choice during onClick event.
+        /// A method that is used to submit the selected answer to the question and will play the dialogueTree associated with the answer.
         /// </summary>
-        /// <param name="choice">The choice chosen in the scene.</param>
-        public void SetChoice(Button choice)
-        {
-            // Needs work
-            foreach (Transform child in choice.transform)
-            {
-                if (child.name.Contains("Choice"))
-                    currentChoice = child.GetComponent<Text>().text;
-            }
-        }
-
         public void SubmitChoice()
         {
-            // Play next dialogue ... needs work
-            switch (currentChoice)
+            if (currentChoice == "")
+                return;
+
+            // Play next dialogue
+            for (int i = 0; i < currentMultipleChoiceNode.answers.Count; i++)
             {
-                case " A.":
-                    DialogueManager.instance.StartDialogue(currentMultipleChoiceNode.answers[0].dialogueTreeResponse);
+                if (currentChoice == currentMultipleChoiceNode.answers[i].answer)
+                {
+                    DialogueManager.instance.StartDialogue(currentMultipleChoiceNode.answers[i].dialogueTreeResponse);
                     break;
-                case " B.":
-                    DialogueManager.instance.StartDialogue(currentMultipleChoiceNode.answers[1].dialogueTreeResponse);
-                    break;
-                case " C.":
-                    DialogueManager.instance.StartDialogue(currentMultipleChoiceNode.answers[2].dialogueTreeResponse);
-                    break;
-                case " D.":
-                    DialogueManager.instance.StartDialogue(currentMultipleChoiceNode.answers[3].dialogueTreeResponse);
-                    break;
+                }
             }
 
             // Delete answerButtonClones generated in SetTemplate method
@@ -82,7 +85,10 @@ namespace DialogueSystem
             }
 
             // Deactivate MultipleChoiceTemplate gameobject
-            gameObject.SetActive(false);
+            questionText.text = "";
+            currentChoice = "";
+
+            submitButton.gameObject.SetActive(false);
         }
     }
 }
