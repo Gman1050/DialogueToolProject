@@ -89,6 +89,14 @@ namespace Valve.VR
             }
         }
         
+        public virtual SteamVR_Action_Boolean Menu
+        {
+            get
+            {
+                return SteamVR_Actions.default_Menu;
+            }
+        }
+        
         public virtual SteamVR_Action_Boolean SnapTurnLeft
         {
             get
@@ -102,6 +110,14 @@ namespace Valve.VR
             get
             {
                 return SteamVR_Actions.default_SnapTurnRight;
+            }
+        }
+        
+        public virtual SteamVR_Action_Boolean TouchIndex
+        {
+            get
+            {
+                return SteamVR_Actions.default_TouchIndex;
             }
         }
         

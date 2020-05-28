@@ -947,17 +947,15 @@ namespace Valve.VR.InteractionSystem
 
 		//-------------------------------------------------
 
-		// This method has no reference calls but its contents still get called somehow. It will show teleport hint in the beginning if uncommented.
+		// This code will run once sometime after starting in play mode for some unknown reason. You can invoke teleport hints via ControllerButtonHints.cs. 
 		/*
 		public void ShowTeleportHint()
 		{
 			CancelTeleportHint();
 
 			hintCoroutine = StartCoroutine( TeleportHintCoroutine() );
-			Debug.Log("hint coroutine: " + hintCoroutine);
 		}
 		*/
-
 
 		//-------------------------------------------------
 		public void CancelTeleportHint()

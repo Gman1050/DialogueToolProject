@@ -2,7 +2,7 @@
   "source": "Unity",
   "applications": [
     {
-      "app_key": "application.generated.unity.dialoguetooltest.exe",
+      "app_key": "application.generated.unity.buttonhighlightssteamvr.exe",
       "launch_type": "url",
       "url": "steam://launch/",
       "action_manifest_path": "C:\\Users\\Ryan\\Desktop\\Unity Projects\\Personal\\DialogueToolTest\\Assets\\StreamingAssets\\SteamVR\\actions.json",
