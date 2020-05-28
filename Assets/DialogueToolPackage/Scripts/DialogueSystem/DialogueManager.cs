@@ -288,6 +288,7 @@ namespace DialogueSystem
                 {
                     // Display MutltipleChoiceCanvas
                     dialogueText.text = "";
+                    dialogueVRText.text = "";
 
                     inputContinueDialogueImage.gameObject.SetActive(false);
                     inputContinueDialogueVRImage.gameObject.SetActive(false);

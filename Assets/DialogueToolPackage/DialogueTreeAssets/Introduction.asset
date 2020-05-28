@@ -38,4 +38,10 @@ MonoBehaviour:
     - answer: Not interested!
       dialogueTreeResponse: {fileID: 11400000, guid: 771e4b8984e529a409803982254d28ca,
         type: 2}
+    - answer: Not interested!
+      dialogueTreeResponse: {fileID: 11400000, guid: 771e4b8984e529a409803982254d28ca,
+        type: 2}
+    - answer: Not interested!
+      dialogueTreeResponse: {fileID: 11400000, guid: 771e4b8984e529a409803982254d28ca,
+        type: 2}
   nextDialogueTree: {fileID: 0}

@@ -14,6 +14,8 @@ namespace DialogueSystem
 
         private string currentChoice = "";
         private DialogueTree.MultipleChoiceNode currentMultipleChoiceNode;
+        private float originalBackgroundPanelHeight;
+        private Rect desiredBackgroundSize;
 
         /// <summary>
         /// Start is called before the first frame update
@@ -22,6 +24,8 @@ namespace DialogueSystem
         {
             questionText.text = "";
             submitButton.gameObject.SetActive(false);
+            desiredBackgroundSize = transform.parent.GetComponent<RectTransform>().rect;
+            originalBackgroundPanelHeight = desiredBackgroundSize.height;
         }
 
         /// <summary>
@@ -37,22 +41,28 @@ namespace DialogueSystem
         {
             currentMultipleChoiceNode = multipleChoiceNode;
             questionText.text = multipleChoiceNode.question;
+
             Vector3 newPosition = answerButtonPrefab.transform.position;
+            float currentBackgroundPanelHeight = originalBackgroundPanelHeight;
 
             for (int i = 0; i < currentMultipleChoiceNode.answers.Count; i++)
             {
                 // Instantiate and set position
-                Button answerButtonClone = Instantiate(answerButtonPrefab, answerButtonPrefab.transform.position, Quaternion.identity, transform);
-                answerButtonClone.GetComponent<RectTransform>().anchoredPosition = newPosition;
-                Debug.Log(answerButtonClone.GetComponent<RectTransform>().position);
+                Button answerButtonClone = Instantiate(answerButtonPrefab, answerButtonPrefab.transform.position, new Quaternion(), transform);
+                answerButtonClone.GetComponent<RectTransform>().anchoredPosition3D = newPosition;
 
-                // Set Properties (answer text, onClick functionalities, etc.)
+                // Set Properties (answer text, choice text (A,B,C,D, ...), etc.)
                 answerButtonClone.GetComponent<MultipleChoiceAnswer>().SetAnswerData(i, currentMultipleChoiceNode.answers[i].answer);
 
                 // Set next position
-                float newPositionY = newPosition.y;
-                newPosition = new Vector3(0, newPositionY - 85, 0);
+                newPosition = new Vector3(newPosition.x, newPosition.y - 85, newPosition.z);
+
+                // Calculate room for backgroundPanelSize
+                currentBackgroundPanelHeight += 85;
             }
+
+            // Set new backgroundPanelSize
+            transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(desiredBackgroundSize.width, currentBackgroundPanelHeight - 85);
 
             submitButton.gameObject.SetActive(true);
         }
@@ -88,6 +98,9 @@ namespace DialogueSystem
             currentChoice = "";
 
             submitButton.gameObject.SetActive(false);
+
+            // Set original backgroundPanelSize
+            transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(desiredBackgroundSize.width, originalBackgroundPanelHeight);
         }
     }
 }
