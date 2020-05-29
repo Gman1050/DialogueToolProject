@@ -19,4 +19,4 @@ MonoBehaviour:
   multipleChoiceNode:
     question: 
     answers: []
-  nextDialogueTree: {fileID: 0}
+  nextDialogueTree: {fileID: 11400000, guid: 47da7da97df1d4d4898c163ff95983c1, type: 2}

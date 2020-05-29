@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using DialogueSystem;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -125,7 +126,12 @@ public class TouchDetection : MonoBehaviour
             
             // Provide feedback by changing color of the button pressed and controller rumble for the respect hand touching the button.
             button.onClick.Invoke();
-            image.color = button.colors.normalColor;
+
+            // Will need to comment this out if DialogueToolPackage plugin doesn't exist
+            if (other.tag == "MultipleChoiceAnswer")
+                image.color = button.colors.selectedColor;
+            else
+                image.color = button.colors.normalColor;
 
             if (buttonClickSound)
                 AudioManager.instance.PlayUserInterfaceSound(buttonClickSound);
