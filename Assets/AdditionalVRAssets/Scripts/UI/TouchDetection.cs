@@ -75,7 +75,8 @@ public class TouchDetection : MonoBehaviour
             {
                 if (lastButtonPressed.GetComponent<Image>().color != lastButtonPressed.colors.normalColor)
                 {
-                    lastButtonPressed.GetComponent<Image>().color = lastButtonPressed.colors.normalColor;
+                    // FIXME: Needs to be commented for multiple choice for Dialogue Tool plugin, but needs to be commented for other UI.
+                    //lastButtonPressed.GetComponent<Image>().color = lastButtonPressed.colors.normalColor;
                 }
             }
         }
@@ -123,15 +124,11 @@ public class TouchDetection : MonoBehaviour
             // Intialize a button and image objects for reference.
             Button button = other.GetComponent<Button>();
             Image image = other.GetComponent<Image>();
-            
-            // Provide feedback by changing color of the button pressed and controller rumble for the respect hand touching the button.
-            button.onClick.Invoke();
 
-            // Will need to comment this out if DialogueToolPackage plugin doesn't exist
-            if (other.tag == "MultipleChoiceAnswer")
-                image.color = button.colors.selectedColor;
-            else
-                image.color = button.colors.normalColor;
+            // Color will change to normal. If color needs to be modified for selected color feedback, then do so in button.onClick.Invoke();
+            image.color = button.colors.normalColor;
+
+            button.onClick.Invoke();
 
             if (buttonClickSound)
                 AudioManager.instance.PlayUserInterfaceSound(buttonClickSound);

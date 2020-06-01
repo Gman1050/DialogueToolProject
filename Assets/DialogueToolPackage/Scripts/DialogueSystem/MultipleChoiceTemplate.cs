@@ -12,6 +12,9 @@ namespace DialogueSystem
         public Button answerButtonPrefab;
         public Button submitButton;
 
+        [Header("Template UI Settings:")]
+        [Range(80, 100)] public float answerButtonSpacing = 95;             // Values to set the spacing between answer buttons that will be spawned on the template.
+
         private string currentChoice = "";
         private DialogueTree.MultipleChoiceNode currentMultipleChoiceNode;
         private float originalBackgroundPanelHeight;
@@ -55,14 +58,14 @@ namespace DialogueSystem
                 answerButtonClone.GetComponent<MultipleChoiceAnswer>().SetAnswerData(i, currentMultipleChoiceNode.answers[i].answer);
 
                 // Set next position
-                newPosition = new Vector3(newPosition.x, newPosition.y - 85, newPosition.z);
+                newPosition = new Vector3(newPosition.x, newPosition.y - answerButtonSpacing, newPosition.z);
 
                 // Calculate room for backgroundPanelSize
-                currentBackgroundPanelHeight += 85;
+                currentBackgroundPanelHeight += answerButtonSpacing;
             }
 
             // Set new backgroundPanelSize
-            transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(desiredBackgroundSize.width, currentBackgroundPanelHeight - 85);
+            transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(desiredBackgroundSize.width, currentBackgroundPanelHeight - answerButtonSpacing);
 
             submitButton.gameObject.SetActive(true);
         }

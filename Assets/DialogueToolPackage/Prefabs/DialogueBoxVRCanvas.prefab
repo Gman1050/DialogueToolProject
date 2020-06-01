@@ -1379,6 +1379,7 @@ MonoBehaviour:
   answerButtonPrefab: {fileID: 3205799389958325100, guid: b160cbd900af762458c0f23bdc29d85b,
     type: 3}
   submitButton: {fileID: 8280315549849951539}
+  answerButtonSpacing: 95
 --- !u!1 &8611925565937946686
 GameObject:
   m_ObjectHideFlags: 0

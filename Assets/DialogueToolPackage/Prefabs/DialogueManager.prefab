@@ -380,20 +380,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2198653673865033881}
     m_Modifications:
-    - target: {fileID: 991699813811609579, guid: ec3a864b638a4c84d9b61268f33b35cc,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1759145408136988993, guid: ec3a864b638a4c84d9b61268f33b35cc,
         type: 3}
       propertyPath: m_Name
       value: DialogueBoxCanvas
-      objectReference: {fileID: 0}
-    - target: {fileID: 1759145408136988993, guid: ec3a864b638a4c84d9b61268f33b35cc,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2032390334046841748, guid: ec3a864b638a4c84d9b61268f33b35cc,
         type: 3}
