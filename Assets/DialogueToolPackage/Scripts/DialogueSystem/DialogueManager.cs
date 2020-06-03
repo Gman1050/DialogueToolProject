@@ -165,6 +165,12 @@ namespace DialogueSystem
             // Set this to show that the current state of the Dialogue is being played if checking outside of the DialogueManager.
             IsDialoguePlaying = true;
 
+            if (!dialogueTree)
+            {
+                EndDialogue();
+                return;
+            }
+
             if (!printDialogue && !playWithAudio)
             {
                 Debug.LogError("Cannot play dialogue! The printDialogue and playWithAudio booleans are false. Mark at least one of these as true in the inspector to start the dialogue.");
@@ -468,11 +474,15 @@ namespace DialogueSystem
             // Stop audio
             audioSource.Stop();
 
-            // If the nextDialogueTree is attached to the current one, then play it.
-            if (currentDialogueTree.nextDialogueTree)
+            // If current dialogue is set.
+            if (currentDialogueTree)
             {
-                StartDialogue(currentDialogueTree.nextDialogueTree);
-                return;
+                // If the nextDialogueTree is attached to the current one, then play it.
+                if (currentDialogueTree.nextDialogueTree)
+                {
+                    StartDialogue(currentDialogueTree.nextDialogueTree);
+                    return;
+                }
             }
 
             if (debugComponent)
