@@ -13,20 +13,13 @@ namespace DialogueSystem
         public static DialogueManager instance; // Static instance of the monobehavior
 
         [Header("Dialogue Canvas Elements:")]
-        public GameObject dialogueCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxCanvas
-        public Text nameText;
-        public Text dialogueText;
-        public RawImage autoContinueDialogueRawImage;
-        public Image inputContinueDialogueImage;
-        public GameObject multipleChoiceTemplate;
+        public DialogueBoxCanvasElements dialogueBoxCanvas;
 
         [Header("Dialogue VR Canvas Elements:")]
-        public GameObject dialogueVRCanvas;   // Get the BackgroundPanel gameobject from DialogueBoxVRCanvas
-        public Text nameVRText;
-        public Text dialogueVRText;
-        public RawImage autoContinueDialogueVRRawImage;
-        public Image inputContinueDialogueVRImage;
-        public GameObject multipleChoiceVRTemplate;
+        public DialogueBoxCanvasElements dialogueBoxVRCanvas;
+
+        [Header("Dialogue World Space Canvas Elements:")]
+        public DialogueBoxCanvasElements dialogueBoxWorldSpaceCanvas;
 
         [Header("Dialogue Print Settings:")]
         [Range(650, 1800)] public float textDisplayWidth = 800.0f;
@@ -64,8 +57,6 @@ namespace DialogueSystem
         public bool playAtStart = false;
         public DialogueTree dialogueTreeTest;
         public bool useTestButtons = false;
-        public GameObject testButtons;
-        public GameObject testVRButtons;
 
         [Header("Debug Settings:")]
         public bool debugComponent = false;
@@ -100,10 +91,10 @@ namespace DialogueSystem
             currentSentenceDelay = sentenceDelay;
 
             // Update speed of animations with current settings
-            inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
-            inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
-            autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
-            autoContinueDialogueVRRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+            dialogueBoxCanvas.inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+            dialogueBoxVRCanvas.inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+            dialogueBoxCanvas.autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+            dialogueBoxVRCanvas.autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
 
             // Used for testing
             if (playAtStart)
@@ -125,8 +116,9 @@ namespace DialogueSystem
                 speedPrintFinish = false;
 
            
-            testButtons.SetActive(useTestButtons);
-            testVRButtons.SetActive(useTestButtons);
+            dialogueBoxCanvas.testButtons.SetActive(useTestButtons);
+            dialogueBoxVRCanvas.testButtons.SetActive(useTestButtons);
+            dialogueBoxWorldSpaceCanvas.testButtons.SetActive(useTestButtons);
         }
 
         /// <summary>
@@ -179,10 +171,12 @@ namespace DialogueSystem
 
             if (!requireContinueButton)
             {
-                autoContinueDialogueRawImage.gameObject.SetActive(true);
-                autoContinueDialogueVRRawImage.gameObject.SetActive(true);
-                autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
-                autoContinueDialogueVRRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+                dialogueBoxCanvas.autoContinueDialogueRawImage.gameObject.SetActive(true);
+                dialogueBoxVRCanvas.autoContinueDialogueRawImage.gameObject.SetActive(true);
+                dialogueBoxWorldSpaceCanvas.autoContinueDialogueRawImage.gameObject.SetActive(true);
+                dialogueBoxCanvas.autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+                dialogueBoxVRCanvas.autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
+                dialogueBoxWorldSpaceCanvas.autoContinueDialogueRawImage.GetComponent<Animator>().speed = autoContinueDialogueImageAnimationSpeed;
             }
 
             // Choose to print string and play audio or just play audio without a respective string
@@ -191,17 +185,23 @@ namespace DialogueSystem
                 // Open Dialogue Box with animation or setting local scale
                 if (useOpenCloseAnimation)
                 {
-                    if (dialogueCanvas.transform.parent.gameObject.activeSelf)
+                    if (dialogueBoxCanvas.gameObject.activeSelf)
                     {
-                        dialogueCanvas.GetComponent<Animator>().enabled = true;
-                        dialogueCanvas.GetComponent<Animator>().SetBool("canTransition", true);
-                        dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+                        dialogueBoxCanvas.backgroundPanel.GetComponent<Animator>().enabled = true;
+                        dialogueBoxCanvas.backgroundPanel.GetComponent<Animator>().SetBool("canTransition", true);
+                        dialogueBoxCanvas.backgroundPanel.GetComponent<Animator>().SetBool("isOpen", true);
                     }
-                    else if (dialogueVRCanvas.transform.parent.gameObject.activeSelf)
+                    else if (dialogueBoxVRCanvas.gameObject.activeSelf)
                     {
-                        dialogueVRCanvas.GetComponent<Animator>().enabled = true;
-                        dialogueVRCanvas.GetComponent<Animator>().SetBool("canTransition", true);
-                        dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", true);
+                        dialogueBoxVRCanvas.backgroundPanel.GetComponent<Animator>().enabled = true;
+                        dialogueBoxVRCanvas.backgroundPanel.GetComponent<Animator>().SetBool("canTransition", true);
+                        dialogueBoxVRCanvas.backgroundPanel.GetComponent<Animator>().SetBool("isOpen", true);
+                    }
+                    else if (dialogueBoxWorldSpaceCanvas.gameObject.activeSelf)
+                    {
+                        dialogueBoxWorldSpaceCanvas.backgroundPanel.GetComponent<Animator>().enabled = true;
+                        dialogueBoxWorldSpaceCanvas.backgroundPanel.GetComponent<Animator>().SetBool("canTransition", true);
+                        dialogueBoxWorldSpaceCanvas.backgroundPanel.GetComponent<Animator>().SetBool("isOpen", true);
                     }
 
                     if (openWithAnimation)
@@ -209,15 +209,20 @@ namespace DialogueSystem
                 }
                 else
                 {
-                    if (dialogueCanvas.transform.parent.gameObject.activeSelf)
+                    if (dialogueBoxCanvas.gameObject.activeSelf)
                     {
-                        dialogueCanvas.GetComponent<Animator>().enabled = false;
-                        dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                        dialogueBoxCanvas.backgroundPanel.GetComponent<Animator>().enabled = false;
+                        dialogueBoxCanvas.backgroundPanel.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
                     }
-                    else if (dialogueVRCanvas.transform.parent.gameObject.activeSelf)
+                    else if (dialogueBoxVRCanvas.gameObject.activeSelf)
                     {
-                        dialogueVRCanvas.GetComponent<Animator>().enabled = false;
-                        dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                        dialogueBoxVRCanvas.backgroundPanel.GetComponent<Animator>().enabled = false;
+                        dialogueBoxVRCanvas.backgroundPanel.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                    }
+                    else if (dialogueBoxWorldSpaceCanvas.gameObject.activeSelf)
+                    {
+                        dialogueBoxWorldSpaceCanvas.backgroundPanel.GetComponent<Animator>().enabled = false;
+                        dialogueBoxWorldSpaceCanvas.backgroundPanel.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
                     }
 
                     if (openWithoutAnimation)
@@ -256,8 +261,9 @@ namespace DialogueSystem
                     {
                         StopAllCoroutines();                    // Stop coroutine that is currently printing.
 
-                        dialogueText.text = currentSentence;
-                        dialogueVRText.text = currentSentence;
+                        dialogueBoxCanvas.dialogueText.text = currentSentence;
+                        dialogueBoxVRCanvas.dialogueText.text = currentSentence;
+                        dialogueBoxWorldSpaceCanvas.dialogueText.text = currentSentence;
 
                         isTypeSentenceCoroutineRunning = false; // Make sure this is false after nodeDialogueString is done typing.
                     }
@@ -272,12 +278,14 @@ namespace DialogueSystem
                         }
                     }
 
-                    inputContinueDialogueImage.gameObject.SetActive(true);
-                    inputContinueDialogueVRImage.gameObject.SetActive(true);
+                    dialogueBoxCanvas.inputContinueDialogueImage.gameObject.SetActive(true);
+                    dialogueBoxVRCanvas.inputContinueDialogueImage.gameObject.SetActive(true);
+                    dialogueBoxWorldSpaceCanvas.inputContinueDialogueImage.gameObject.SetActive(true);
 
                     // Update speed of animation with current settings
-                    inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
-                    inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                    dialogueBoxCanvas.inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                    dialogueBoxVRCanvas.inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                    dialogueBoxWorldSpaceCanvas.inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
                 }
                 return;
             }
@@ -293,19 +301,25 @@ namespace DialogueSystem
                 if (currentDialogueTree.multipleChoiceNode.answers.Count >= 2)
                 {
                     // Display MutltipleChoiceCanvas
-                    dialogueText.text = "";
-                    dialogueVRText.text = "";
+                    dialogueBoxCanvas.dialogueText.text = "";
+                    dialogueBoxVRCanvas.dialogueText.text = "";
+                    dialogueBoxWorldSpaceCanvas.dialogueText.text = "";
 
-                    inputContinueDialogueImage.gameObject.SetActive(false);
-                    inputContinueDialogueVRImage.gameObject.SetActive(false);
-                    autoContinueDialogueRawImage.gameObject.SetActive(false);
-                    autoContinueDialogueVRRawImage.gameObject.SetActive(false);
+                    dialogueBoxCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
+                    dialogueBoxVRCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
+                    dialogueBoxWorldSpaceCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
+                    dialogueBoxCanvas.autoContinueDialogueRawImage.gameObject.SetActive(false);
+                    dialogueBoxVRCanvas.autoContinueDialogueRawImage.gameObject.SetActive(false);
+                    dialogueBoxWorldSpaceCanvas.autoContinueDialogueRawImage.gameObject.SetActive(false);
 
-                    if (multipleChoiceTemplate.transform.parent.parent.gameObject.activeSelf)
-                        multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
+                    if (dialogueBoxCanvas.multipleChoiceTemplate.transform.parent.parent.gameObject.activeSelf)
+                        dialogueBoxCanvas.multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
 
-                    if (multipleChoiceVRTemplate.transform.parent.parent.gameObject.activeSelf)
-                        multipleChoiceVRTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
+                    if (dialogueBoxVRCanvas.multipleChoiceTemplate.transform.parent.parent.gameObject.activeSelf)
+                        dialogueBoxVRCanvas.multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
+
+                    if (dialogueBoxWorldSpaceCanvas.multipleChoiceTemplate.transform.parent.parent.gameObject.activeSelf)
+                        dialogueBoxWorldSpaceCanvas.multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
 
                     return;
                 }
@@ -316,8 +330,9 @@ namespace DialogueSystem
             }
 
             // Adjust textDisplayWidth to fit more center with the camera screen.
-            dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueText.GetComponent<RectTransform>().sizeDelta.y);
-            dialogueVRText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueVRText.GetComponent<RectTransform>().sizeDelta.y);
+            dialogueBoxCanvas.dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueBoxCanvas.dialogueText.GetComponent<RectTransform>().sizeDelta.y);
+            dialogueBoxVRCanvas.dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueBoxVRCanvas.dialogueText.GetComponent<RectTransform>().sizeDelta.y);
+            dialogueBoxWorldSpaceCanvas.dialogueText.GetComponent<RectTransform>().sizeDelta = new Vector2(textDisplayWidth, dialogueBoxWorldSpaceCanvas.dialogueText.GetComponent<RectTransform>().sizeDelta.y);
 
             // Save nodeDialogueString and audioclip that is being dequeued
             DialogueTree.DialogueNode dialogueNode = dialogueNodes.Peek();
@@ -350,13 +365,15 @@ namespace DialogueSystem
             AudioClip nodeDialogueAudioClip = dialogueNode.nodeDialogueAudioClip;
 
             // Set nodeCharacterName text fields with the nodeCharacterName of the person talking in the dialogueTree
-            nameText.text = nodeCharacterName;
-            nameVRText.text = nodeCharacterName;
+            dialogueBoxCanvas.nameText.text = nodeCharacterName;
+            dialogueBoxVRCanvas.nameText.text = nodeCharacterName;
+            dialogueBoxWorldSpaceCanvas.nameText.text = nodeCharacterName;
 
             if (requireContinueButton)
             {
-                inputContinueDialogueImage.gameObject.SetActive(false);
-                inputContinueDialogueVRImage.gameObject.SetActive(false);
+                dialogueBoxCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
+                dialogueBoxVRCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
+                dialogueBoxWorldSpaceCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
             }
 
             currentSentence = nodeDialogueString;
@@ -385,8 +402,9 @@ namespace DialogueSystem
                     }
                 }
 
-                dialogueText.text = nodeDialogueString;         // Display full nodeDialogueString instantly
-                dialogueVRText.text = nodeDialogueString;         // Display full nodeDialogueString instantly
+                dialogueBoxCanvas.dialogueText.text = nodeDialogueString;         // Display full nodeDialogueString instantly
+                dialogueBoxVRCanvas.dialogueText.text = nodeDialogueString;         // Display full nodeDialogueString instantly
+                dialogueBoxWorldSpaceCanvas.dialogueText.text = nodeDialogueString;         // Display full nodeDialogueString instantly
 
                 float fullSentenceDelay = (currentPrintLetterDelay * nodeDialogueString.Length) + (punctutationCount * currentSentenceDelay) + currentSentenceDelay; // (CharacterCount from current dialogueTreeElement  * print delay time) + (number of punctuation characters * nodeDialogueString delay time) + end of dialogueTreeElement delay time.
 
@@ -415,13 +433,15 @@ namespace DialogueSystem
             else
             {
                 // Clear text fields before printing
-                dialogueText.text = "";
-                dialogueVRText.text = "";
+                dialogueBoxCanvas.dialogueText.text = "";
+                dialogueBoxVRCanvas.dialogueText.text = "";
+                dialogueBoxWorldSpaceCanvas.dialogueText.text = "";
 
                 foreach (char letter in nodeDialogueString.ToCharArray())
                 {
-                    dialogueText.text += letter;
-                    dialogueVRText.text += letter;
+                    dialogueBoxCanvas.dialogueText.text += letter;
+                    dialogueBoxVRCanvas.dialogueText.text += letter;
+                    dialogueBoxWorldSpaceCanvas.dialogueText.text += letter;
 
                     // If character is any form of punctutation, then delay next nodeDialogueString. Otherwise, print normally. 
                     if (letter == ',' || letter == ';' || letter == '.' || letter == '?' || letter == '!')
@@ -454,12 +474,14 @@ namespace DialogueSystem
 
             if (requireContinueButton)
             {
-                inputContinueDialogueImage.gameObject.SetActive(true);
-                inputContinueDialogueVRImage.gameObject.SetActive(true);
+                dialogueBoxCanvas.inputContinueDialogueImage.gameObject.SetActive(true);
+                dialogueBoxVRCanvas.inputContinueDialogueImage.gameObject.SetActive(true);
+                dialogueBoxWorldSpaceCanvas.inputContinueDialogueImage.gameObject.SetActive(true);
 
                 // Update speed of animation with current settings
-                inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
-                inputContinueDialogueVRImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                dialogueBoxCanvas.inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                dialogueBoxVRCanvas.inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
+                dialogueBoxWorldSpaceCanvas.inputContinueDialogueImage.GetComponent<Animator>().speed = inputContinueDialogueImageAnimationSpeed;
             }
 
             if (debugComponent)
@@ -491,29 +513,35 @@ namespace DialogueSystem
             // Close the dialogue box with animation or local scale change.
             if (useOpenCloseAnimation)
             {
-                if (dialogueCanvas.transform.parent.gameObject.activeSelf)
-                    dialogueCanvas.GetComponent<Animator>().SetBool("isOpen", false);
-                else if (dialogueVRCanvas.transform.parent.gameObject.activeSelf)
-                    dialogueVRCanvas.GetComponent<Animator>().SetBool("isOpen", false);
+                if (dialogueBoxCanvas.gameObject.activeSelf)
+                    dialogueBoxCanvas.backgroundPanel.GetComponent<Animator>().SetBool("isOpen", false);
+                else if (dialogueBoxVRCanvas.gameObject.activeSelf)
+                    dialogueBoxVRCanvas.backgroundPanel.GetComponent<Animator>().SetBool("isOpen", false);
+                else if (dialogueBoxWorldSpaceCanvas.gameObject.activeSelf)
+                    dialogueBoxWorldSpaceCanvas.backgroundPanel.GetComponent<Animator>().SetBool("isOpen", false);
 
                 if (closeWithAnimation)
                     audioSource.PlayOneShot(closeWithAnimation);
             }
             else
             {
-                if (dialogueCanvas.transform.parent.gameObject.activeSelf)
-                    dialogueCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
-                else if (dialogueVRCanvas.transform.parent.gameObject.activeSelf)
-                    dialogueVRCanvas.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+                if (dialogueBoxCanvas.gameObject.activeSelf)
+                    dialogueBoxCanvas.backgroundPanel.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+                else if (dialogueBoxVRCanvas.gameObject.activeSelf)
+                    dialogueBoxVRCanvas.backgroundPanel.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
+                else if (dialogueBoxWorldSpaceCanvas.gameObject.activeSelf)
+                    dialogueBoxWorldSpaceCanvas.backgroundPanel.GetComponent<RectTransform>().localScale = new Vector3(1, 0, 1);
 
                 if (closeWithoutAnimation)
                     audioSource.PlayOneShot(closeWithoutAnimation);
             }
 
-            inputContinueDialogueImage.gameObject.SetActive(false);
-            inputContinueDialogueVRImage.gameObject.SetActive(false);
-            autoContinueDialogueRawImage.gameObject.SetActive(false);
-            autoContinueDialogueVRRawImage.gameObject.SetActive(false);
+            dialogueBoxCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
+            dialogueBoxVRCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
+            dialogueBoxWorldSpaceCanvas.inputContinueDialogueImage.gameObject.SetActive(false);
+            dialogueBoxCanvas.autoContinueDialogueRawImage.gameObject.SetActive(false);
+            dialogueBoxVRCanvas.autoContinueDialogueRawImage.gameObject.SetActive(false);
+            dialogueBoxWorldSpaceCanvas.autoContinueDialogueRawImage.gameObject.SetActive(false);
 
             // Set this to show that the current state of the Dialogue is being played if checking outside of the DialogueManager.
             IsDialoguePlaying = false;

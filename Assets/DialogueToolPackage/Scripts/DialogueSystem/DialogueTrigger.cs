@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace DialogueSystem
 {
@@ -9,7 +10,12 @@ namespace DialogueSystem
     /// </summary>
     public class DialogueTrigger : MonoBehaviour
     {
+        [Header("The DialogueTree that will be played:")]
         public DialogueTree dialogueTree;
+
+        [Header("Start and End Events of a DialogueTree:")]
+        public UnityEvent onStartDialogue;
+        public UnityEvent onEndDialogue;
 
         /// <summary>
         /// A method to call the DialogueManager to start the dialogueTree.
