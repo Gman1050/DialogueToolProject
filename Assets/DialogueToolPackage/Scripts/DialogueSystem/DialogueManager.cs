@@ -21,6 +21,9 @@ namespace DialogueSystem
         [Header("Dialogue World Space Canvas Elements:")]
         public DialogueBoxCanvasElements dialogueBoxWorldSpaceCanvas;
 
+        [Header("Dialogue Multiple Choice Settings:")]
+        public bool useMultipleChoiceTemplateSimultaniously = false;
+
         [Header("Dialogue Print Settings:")]
         [Range(650, 1800)] public float textDisplayWidth = 800.0f;
         [Range(0, 0.1f)] public float printLetterDelay = 0.1f;
@@ -68,6 +71,7 @@ namespace DialogueSystem
         private DialogueTree currentDialogueTree;
         
         // Dialogue Play State Checking
+        public Transform currentDialogueSpeakerLocation { get; private set; }
         public bool IsDialoguePlaying { get; private set; }
         private bool isTypeSentenceCoroutineRunning = false;
         private string currentSentence;
@@ -152,7 +156,7 @@ namespace DialogueSystem
         /// A method to initiate the dialogueTree into a displayable UI.
         /// </summary>
         /// <param nodeCharacterName="dialogueTree">The scriptable object that will be used to extract string and audioclip data for dialogue.</param>
-        public void StartDialogue(DialogueTree dialogueTree)
+        public void StartDialogue(DialogueTree dialogueTree, Transform newTransform = null)
         {
             // Set this to show that the current state of the Dialogue is being played if checking outside of the DialogueManager.
             IsDialoguePlaying = true;
@@ -169,6 +173,18 @@ namespace DialogueSystem
                 return;
             }
 
+            // Set position of world space canvas
+            if (newTransform)
+            {
+                Transform adjustedTransform = newTransform;
+                adjustedTransform.position = new Vector3(newTransform.position.x, newTransform.position.y + 0.25f, newTransform.position.z);
+                currentDialogueSpeakerLocation = adjustedTransform;
+
+                if (dialogueBoxWorldSpaceCanvas.gameObject.activeSelf)
+                    dialogueBoxWorldSpaceCanvas.SetWorldSpaceCanvasPosition(adjustedTransform.position);
+            }
+
+            // Set graphics settings for auto dialogue
             if (!requireContinueButton)
             {
                 dialogueBoxCanvas.autoContinueDialogueRawImage.gameObject.SetActive(true);
@@ -300,6 +316,9 @@ namespace DialogueSystem
                 // If DialogueTree has multipleChoiceNode with at least two answers, then
                 if (currentDialogueTree.multipleChoiceNode.answers.Count >= 2)
                 {
+                    if (dialogueBoxWorldSpaceCanvas.gameObject.activeSelf)
+                        dialogueBoxWorldSpaceCanvas.SetWorldSpaceCanvasPosition(new Vector3(), true);
+
                     // Display MutltipleChoiceCanvas
                     dialogueBoxCanvas.dialogueText.text = "";
                     dialogueBoxVRCanvas.dialogueText.text = "";
@@ -312,13 +331,13 @@ namespace DialogueSystem
                     dialogueBoxVRCanvas.autoContinueDialogueRawImage.gameObject.SetActive(false);
                     dialogueBoxWorldSpaceCanvas.autoContinueDialogueRawImage.gameObject.SetActive(false);
 
-                    if (dialogueBoxCanvas.multipleChoiceTemplate.transform.parent.parent.gameObject.activeSelf)
+                    if (dialogueBoxCanvas.gameObject.activeSelf)
                         dialogueBoxCanvas.multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
 
-                    if (dialogueBoxVRCanvas.multipleChoiceTemplate.transform.parent.parent.gameObject.activeSelf)
+                    if (dialogueBoxVRCanvas.gameObject.activeSelf)
                         dialogueBoxVRCanvas.multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
 
-                    if (dialogueBoxWorldSpaceCanvas.multipleChoiceTemplate.transform.parent.parent.gameObject.activeSelf)
+                    if (dialogueBoxWorldSpaceCanvas.gameObject.activeSelf)
                         dialogueBoxWorldSpaceCanvas.multipleChoiceTemplate.GetComponent<MultipleChoiceTemplate>().SetTemplate(currentDialogueTree.multipleChoiceNode);
 
                     return;

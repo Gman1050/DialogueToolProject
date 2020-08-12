@@ -39,7 +39,7 @@ namespace DialogueSystem
             multipleChoiceTemplate.SetCurrentChoice(choice.GetComponent<MultipleChoiceAnswer>().answerText.text);
 
             // Color selected green and color deselected white for VR Laser Pointer and TouchDetection.
-            if (multipleChoiceTemplate.transform.parent.parent.name == "DialogueBoxVRCanvas")
+            if (multipleChoiceTemplate.transform.parent.parent.name == "DialogueBoxVRCanvas" || multipleChoiceTemplate.transform.parent.parent.name == "DialogueBoxWorldSpaceCanvas")
             {
                 // Find all children including selected button to turn to normalColor for button
                 foreach (Transform child in multipleChoiceTemplate.transform)

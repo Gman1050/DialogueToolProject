@@ -84,7 +84,7 @@ namespace DialogueSystem
             {
                 if (currentChoice == currentMultipleChoiceNode.answers[i].answer)
                 {
-                    DialogueManager.instance.StartDialogue(currentMultipleChoiceNode.answers[i].dialogueTreeResponse);
+                    DialogueManager.instance.StartDialogue(currentMultipleChoiceNode.answers[i].dialogueTreeResponse, DialogueManager.instance.currentDialogueSpeakerLocation);
                     break;
                 }
             }

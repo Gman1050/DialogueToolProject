@@ -17,13 +17,25 @@ namespace DialogueSystem
         public UnityEvent onStartDialogue;
         public UnityEvent onEndDialogue;
 
+        [Header("Dialogue Test Settings:")]
+        public bool playAtStart = false;
+
+        /// <summary>
+        /// Start is called before the first frame update
+        /// </summary>
+        void Start()
+        {
+            if (playAtStart)
+                StartCoroutine(DelayTriggerDialogue(0.1f));
+        }
+
         /// <summary>
         /// A method to call the DialogueManager to start the dialogueTree.
         /// </summary>
         public void TriggerDialogue()
         {
             if (DialogueManager.instance)
-                DialogueManager.instance.StartDialogue(dialogueTree);
+                DialogueManager.instance.StartDialogue(dialogueTree, transform);
             else
                 Debug.LogError("DialogueManager instance is not set! Please place DialogueManager in the scene.");
         }
@@ -42,6 +54,12 @@ namespace DialogueSystem
             }
 
             dialogueTree.dialogueNodeElements = dialogueNodeElements;
+        }
+
+        IEnumerator DelayTriggerDialogue(float seconds)
+        {
+            yield return new WaitForSeconds(seconds);
+            TriggerDialogue();
         }
     }
 }
